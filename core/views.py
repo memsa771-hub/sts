@@ -27,6 +27,7 @@ from .forms import (
     MaterialUsageForm, WorkerForm, ProjectWorkerAssignmentForm, ActivityForm, 
     ActivityWorkForm, ActivitySelectionForm, RFIForm, TeamMemberForm, RFIInspectorResponseForm
 )
+from .activity_import import build_sample_workbook, import_activities_from_xlsx
 import json
 
 
@@ -1404,6 +1405,66 @@ def create_activity_quick(request, project_id):
                 return JsonResponse({'success': False, 'error': 'Failed to create activity'})
     
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+def _can_manage_project_activities(user, project):
+    return (
+        user == project.created_by
+        or user == project.site_engineer
+        or user.role == 'admin'
+    )
+
+
+@login_required
+def import_activities(request):
+    """Bulk import activities from a strict 3-column Excel (.xlsx) file."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Only POST requests are allowed.'}, status=405)
+
+    project_id = request.POST.get('project_id')
+    if not project_id:
+        return JsonResponse({'success': False, 'error': 'project_id is required.'}, status=400)
+
+    project = get_object_or_404(Project, id=project_id)
+    if not _can_manage_project_activities(request.user, project):
+        return JsonResponse({'success': False, 'error': 'You do not have permission to import activities.'}, status=403)
+
+    uploaded_file = request.FILES.get('file')
+    if not uploaded_file:
+        return JsonResponse({'success': False, 'error': 'No Excel file uploaded.'}, status=400)
+
+    if not uploaded_file.name.lower().endswith('.xlsx'):
+        return JsonResponse({'success': False, 'error': 'Only .xlsx Excel files are accepted.'}, status=400)
+
+    summary = import_activities_from_xlsx(uploaded_file, project, request.user)
+
+    if summary.get('file_error'):
+        return JsonResponse(summary, status=400)
+
+    # Always return 200 for processed files so the frontend can read the JSON summary
+    # even when every row failed (e.g. duplicate activities on re-import).
+    return JsonResponse({
+        'success': bool(summary.get('successful', 0)),
+        'file_error': summary.get('file_error'),
+        'total_rows': int(summary.get('total_rows', 0)),
+        'successful': int(summary.get('successful', 0)),
+        'failed': int(summary.get('failed', 0)),
+        'failures': summary.get('failures', []),
+        'created_count': int(summary.get('created_count', 0)),
+        'message': summary.get('message', ''),
+    })
+
+
+@login_required
+def download_activity_import_template(request):
+    """Download sample Excel template for activity import."""
+    buffer = build_sample_workbook()
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    response['Content-Disposition'] = 'attachment; filename="activities_import_template.xlsx"'
+    return response
 
 
 @login_required

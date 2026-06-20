@@ -63,6 +63,97 @@
         background: var(--primary-hover) !important;
         box-shadow: 0 4px 12px rgba(103, 61, 230, 0.3);
     }
+
+    .import-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px dashed var(--border-color);
+    }
+
+    .import-actions-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-right: auto;
+    }
+
+    .btn-import {
+        background: #10b981 !important;
+        color: white !important;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-import:hover {
+        background: #059669 !important;
+        color: white !important;
+    }
+
+    .btn-template {
+        background: white !important;
+        color: var(--primary-color) !important;
+        border: 1px solid var(--primary-color) !important;
+        border-radius: 8px;
+        padding: 10px 18px;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-template:hover {
+        background: var(--sidebar-hover) !important;
+        color: var(--primary-color) !important;
+    }
+
+    .import-help {
+        width: 100%;
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 4px;
+    }
+
+    .import-summary-box {
+        background: var(--bg-light);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+    }
+
+    .import-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 14px;
+    }
+
+    .import-failures {
+        max-height: 220px;
+        overflow-y: auto;
+        margin-top: 12px;
+    }
+
+    .import-failure-item {
+        font-size: 13px;
+        padding: 8px 10px;
+        border-left: 3px solid #ef4444;
+        background: #fff;
+        border-radius: 4px;
+        margin-bottom: 8px;
+    }
     
     /* Activities Table Styles */
     .activities-table-container {
@@ -407,6 +498,21 @@
                 </div>
             </div>
         </form>
+
+        <div class="import-actions">
+            <div class="import-actions-title">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Bulk Import
+            </div>
+            <button type="button" class="btn-import" data-bs-toggle="modal" data-bs-target="#importExcelModal">
+                <i class="bi bi-upload"></i> Import Excel
+            </button>
+            <a href="{% url 'download_activity_import_template' %}" class="btn-template">
+                <i class="bi bi-download"></i> Download Sample Template
+            </a>
+            <p class="import-help mb-0">
+                Excel file must have exactly 3 columns: <strong>Activity Name</strong>, <strong>Total Quantity</strong>, <strong>Unit</strong>.
+            </p>
+        </div>
     </div>
     {% endif %}
     
@@ -493,6 +599,55 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Import Excel Modal -->
+{% if can_edit %}
+<div class="modal fade" id="importExcelModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-file-earmark-excel me-2"></i>Import Activities from Excel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="importFormSection">
+                    <div class="alert alert-info py-2 small mb-3">
+                        Required format (.xlsx only): Column A = Activity Name, Column B = Total Quantity, Column C = Unit.
+                        Extra columns will be rejected.
+                    </div>
+                    <form id="importExcelForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="project_id" value="{{ project.id }}">
+                        <div class="mb-3">
+                            <label for="importExcelFile" class="form-label">Select Excel File (.xlsx)</label>
+                            <input type="file" class="form-control" id="importExcelFile" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="importSummarySection" style="display: none;">
+                    <div id="importSummaryMessage" class="alert mb-3"></div>
+                    <div class="import-summary-box">
+                        <div class="import-stat"><span>Total rows processed</span><strong id="summaryTotal">0</strong></div>
+                        <div class="import-stat"><span>Successfully inserted</span><strong id="summarySuccess" class="text-success">0</strong></div>
+                        <div class="import-stat"><span>Failed rows</span><strong id="summaryFailed" class="text-danger">0</strong></div>
+                    </div>
+                    <div id="importFailuresWrap" style="display: none;">
+                        <h6 class="mt-3 mb-2">Failed Rows</h6>
+                        <div class="import-failures" id="importFailuresList"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="importSubmitBtn" onclick="submitActivityImport()">
+                    <i class="bi bi-upload"></i> Upload &amp; Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Edit Activity Modal -->
 <div class="modal fade" id="editActivityModal" tabindex="-1">
@@ -742,7 +897,9 @@ function deleteActivity(activityId, activityName) {
 }
 
 // Form submission handling
-document.getElementById('activityForm').addEventListener('submit', function(e) {
+const activityForm = document.getElementById('activityForm');
+if (activityForm) {
+activityForm.addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
@@ -773,6 +930,123 @@ document.getElementById('activityForm').addEventListener('submit', function(e) {
         alert('Error adding activity');
     });
 });
+}
+
+function resetImportModal() {
+    document.getElementById('importFormSection').style.display = 'block';
+    document.getElementById('importSummarySection').style.display = 'none';
+    document.getElementById('importSummaryMessage').className = 'alert mb-3';
+    document.getElementById('importFailuresWrap').style.display = 'none';
+    document.getElementById('importFailuresList').innerHTML = '';
+    document.getElementById('importSubmitBtn').style.display = 'inline-block';
+    document.getElementById('importExcelFile').value = '';
+}
+
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function showImportSummary(data) {
+    const successful = Number(data.successful) || 0;
+    const failed = Number(data.failed) || 0;
+    const totalRows = Number(data.total_rows) || 0;
+
+    document.getElementById('importFormSection').style.display = 'none';
+    document.getElementById('importSummarySection').style.display = 'block';
+    document.getElementById('importSubmitBtn').style.display = 'none';
+
+    const messageEl = document.getElementById('importSummaryMessage');
+    messageEl.textContent = data.message || data.file_error || data.error || 'Import finished.';
+    if (successful > 0 && failed === 0) {
+        messageEl.className = 'alert alert-success mb-3';
+    } else if (successful > 0) {
+        messageEl.className = 'alert alert-warning mb-3';
+    } else {
+        messageEl.className = 'alert alert-danger mb-3';
+    }
+
+    document.getElementById('summaryTotal').textContent = totalRows;
+    document.getElementById('summarySuccess').textContent = successful;
+    document.getElementById('summaryFailed').textContent = failed;
+
+    const failures = Array.isArray(data.failures) ? data.failures : [];
+    if (failures.length > 0) {
+        document.getElementById('importFailuresWrap').style.display = 'block';
+        document.getElementById('importFailuresList').innerHTML = failures.map(item => (
+            `<div class="import-failure-item"><strong>Row ${escapeHtml(item.row)}:</strong> ${escapeHtml(item.reason)}</div>`
+        )).join('');
+    }
+}
+
+function submitActivityImport() {
+    const form = document.getElementById('importExcelForm');
+    const fileInput = document.getElementById('importExcelFile');
+    const submitBtn = document.getElementById('importSubmitBtn');
+
+    if (!fileInput.files.length) {
+        alert('Please select an Excel (.xlsx) file.');
+        return;
+    }
+
+    const formData = new FormData(form);
+    const csrfToken = formData.get('csrfmiddlewaretoken');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
+
+    fetch('{% url "import_activities" %}', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Accept': 'application/json'
+        }
+    })
+    .then(async response => {
+        const responseText = await response.text();
+        let data;
+        try {
+            data = responseText ? JSON.parse(responseText) : {};
+        } catch (parseError) {
+            console.error('Import response parse error:', parseError, responseText);
+            throw new Error('Server returned an invalid response. Please refresh the page and try again.');
+        }
+
+        showImportSummary(data);
+
+        const successful = Number(data.successful) || 0;
+        if (successful > 0) {
+            setTimeout(() => location.reload(), 800);
+            return;
+        }
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('importFormSection').style.display = 'none';
+        document.getElementById('importSummarySection').style.display = 'block';
+        document.getElementById('importSubmitBtn').style.display = 'none';
+
+        const messageEl = document.getElementById('importSummaryMessage');
+        messageEl.textContent = error.message || 'Import failed due to a network or server error.';
+        messageEl.className = 'alert alert-danger mb-3';
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
+    });
+}
+
+const importExcelModal = document.getElementById('importExcelModal');
+if (importExcelModal) {
+    importExcelModal.addEventListener('show.bs.modal', resetImportModal);
+}
 
 // No initialization needed - progress bars removed for clean look
 </script>
