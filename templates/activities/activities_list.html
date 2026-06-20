@@ -1,0 +1,779 @@
+{% extends 'base.html' %}
+
+{% block title %}Project Activities - Site Tracking System{% endblock %}
+
+{% block page_title %}Project Activities{% endblock %}
+
+{% block extra_css %}
+<style>
+    .activities-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 32px;
+    }
+    
+    .activity-section {
+        background: white;
+        border-radius: 12px;
+        padding: 32px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+    
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 24px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .activity-form {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 16px;
+        align-items: end;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .btn-add {
+        background: var(--primary-color) !important;
+        color: white !important;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        white-space: nowrap;
+        height: 42px;
+    }
+    
+    .btn-add:hover {
+        background: var(--primary-hover) !important;
+        box-shadow: 0 4px 12px rgba(103, 61, 230, 0.3);
+    }
+    
+    /* Activities Table Styles */
+    .activities-table-container {
+        margin-top: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        background: white;
+    }
+    
+    .activities-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    
+    .activities-table thead {
+        background: #5b8fd8;
+        color: white;
+    }
+    
+    .activities-table th {
+        padding: 14px 16px;
+        font-weight: 600;
+        font-size: 14px;
+        border: none;
+        text-align: left;
+    }
+    
+    .activities-table th.checkbox-col,
+    .activities-table th.counter-col,
+    .activities-table th.total-col,
+    .activities-table th.unit-col,
+    .activities-table th.actions-col {
+        text-align: center;
+    }
+    
+    .activities-table th.activity-col {
+        text-align: left;
+    }
+    
+    .activities-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+        font-size: 14px;
+        color: var(--text-primary);
+    }
+    
+    .activity-row:hover {
+        background: var(--bg-light);
+        transition: background-color 0.2s ease;
+    }
+    
+    .activity-row:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Table Column Styles */
+    .checkbox-col, .checkbox-cell {
+        width: 50px;
+        text-align: center;
+    }
+    
+    .counter-col, .counter-cell {
+        width: 60px;
+        text-align: center;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    
+    .activity-col, .activity-cell {
+        width: 30%;
+        text-align: left;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .total-col, .total-cell {
+        width: 25%;
+        text-align: center;
+        font-weight: 500;
+        color: var(--text-primary);
+    }
+    
+    .unit-col, .unit-cell {
+        width: 20%;
+        text-align: center;
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+    
+    .actions-col, .actions-cell {
+        width: 140px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    
+    .actions-cell {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .actions-cell .btn-icon {
+        display: inline-flex;
+        margin: 0;
+    }
+    
+    .activity-checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+        border-radius: 4px;
+    }
+    
+    .activity-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+    }
+    
+    .btn-edit {
+        background: #fbbf24;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #f59e0b;
+        transform: translateY(-1px);
+    }
+    
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+        transform: translateY(-1px);
+    }
+    
+    .bulk-actions {
+        margin-bottom: 16px;
+        padding: 16px 20px;
+        background: var(--bg-light);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        display: none;
+        align-items: center;
+        justify-content: space-between;
+        animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .bulk-actions.show {
+        display: flex;
+    }
+    
+    .bulk-actions-text {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .bulk-actions-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-bulk {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .btn-bulk-report {
+        background: #10b981 !important;
+        color: white;
+    }
+    
+    .btn-bulk-report:hover {
+        background: #059669 !important;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+    
+    .btn-bulk-delete {
+        background: #ef4444 !important;
+        color: white;
+    }
+    
+    .btn-bulk-delete:hover {
+        background: #dc2626 !important;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 16px;
+        color: #d1d5db;
+    }
+    
+    .empty-state h5 {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    @media (max-width: 768px) {
+        .activities-container {
+            padding: 16px;
+        }
+        
+        .activity-section {
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .activity-form {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .activities-table-container {
+            overflow-x: auto;
+        }
+        
+        .activities-table {
+            min-width: 600px;
+        }
+        
+        .activities-table th,
+        .activities-table td {
+            padding: 12px;
+            font-size: 13px;
+        }
+        
+        .btn-icon {
+            width: 28px;
+            height: 28px;
+            font-size: 13px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="activities-container">
+    <!-- Add New Activity Section -->
+    {% if can_edit %}
+    <div class="activity-section">
+        <h2 class="section-title">
+            <i class="bi bi-plus-circle"></i>
+            Add New Activity
+        </h2>
+        
+        <form method="post" action="{% url 'create_activity_quick' project.id %}" id="activityForm">
+            {% csrf_token %}
+            <div class="activity-form">
+                <div class="form-group">
+                    <label class="form-label">Activity Name</label>
+                    <input type="text" 
+                           name="activity_name" 
+                           class="form-control" 
+                           placeholder="e.g. Brickwork at base"
+                           required
+                           autocomplete="off">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Total Quantity</label>
+                    <input type="number" 
+                           name="total_quantity" 
+                           class="form-control" 
+                           placeholder="e.g. 500" 
+                           step="0.001" 
+                           min="0">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Unit</label>
+                    <select name="unit" class="form-select" required>
+                        <option value="">Select unit</option>
+                        <option value="sqft">Square Feet</option>
+                        <option value="sqm">Square Meters</option>
+                        <option value="cuft">Cubic Feet</option>
+                        <option value="cum">Cubic Meters</option>
+                        <option value="lnft">Linear Feet</option>
+                        <option value="lnm">Linear Meters</option>
+                        <option value="pcs">Pieces</option>
+                        <option value="kg">Kilogram</option>
+                        <option value="ton">Ton</option>
+                        <option value="ltr">Liter</option>
+                        <option value="bags">Bags</option>
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn-add">Add</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+    
+    <!-- Added Activities Section -->
+    <div class="activity-section">
+        <h2 class="section-title">
+            <i class="bi bi-list-check"></i>
+            Added Activities
+        </h2>
+        
+        <!-- Bulk Actions Bar -->
+        <div class="bulk-actions" id="bulkActions">
+            <span class="bulk-actions-text">
+                <span id="selectedCount">0</span> activities selected
+            </span>
+            <div class="bulk-actions-buttons">
+                <button type="button" class="btn-bulk btn-bulk-report" onclick="makeReportFromSelected()">
+                    <i class="bi bi-file-earmark-text"></i> Make Report
+                </button>
+                <button type="button" class="btn-bulk btn-bulk-delete" onclick="deleteSelectedActivities()">
+                    <i class="bi bi-trash"></i> Delete Selected
+                </button>
+            </div>
+        </div>
+        
+        {% if activities %}
+            <div class="activities-table-container">
+                <table class="activities-table sts-stack-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
+                            <th class="counter-col">#</th>
+                            <th class="activity-col">Activity</th>
+                            <th class="total-col">Total</th>
+                            <th class="unit-col">Unit</th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                        <tr class="activity-row">
+                            <td class="checkbox-cell" data-label="Select">
+                                <input type="checkbox" 
+                                       class="activity-checkbox" 
+                                       value="{{ activity.id }}"
+                                       onchange="updateBulkActions()">
+                            </td>
+                            <td class="counter-cell" data-label="#">{{ forloop.counter }}</td>
+                            <td class="activity-cell" data-label="Activity">{{ activity.name }}</td>
+                            <td class="total-cell" data-label="Total">{{ activity.total_quantity|default:"0" }}</td>
+                            <td class="unit-cell" data-label="Unit">{{ activity.get_unit_display }}</td>
+                            <td class="actions-cell" data-label="Actions">
+                                {% if can_edit %}
+                                <button type="button" 
+                                        class="btn-icon btn-edit" 
+                                        onclick="editActivity({{ activity.id }})"
+                                        title="Edit Activity">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                
+                                <button type="button" 
+                                        class="btn-icon btn-delete" 
+                                        onclick="deleteActivity({{ activity.id }}, '{{ activity.name|escapejs }}')"
+                                        title="Delete Activity">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% else %}
+                                <span class="text-muted"><i class="bi bi-eye"></i></span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-list-ul"></i>
+                <h5>No Activities Added Yet</h5>
+                <p>Add your first activity using the form above.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Edit Activity Modal -->
+<div class="modal fade" id="editActivityModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editActivityForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="activityId" name="activity_id">
+                    <div class="mb-3">
+                        <label class="form-label">Activity Name</label>
+                        <input type="text" id="editActivityName" name="activity_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Quantity</label>
+                        <input type="number" id="editTotalQuantity" name="total_quantity" class="form-control" step="0.001" min="0">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Unit</label>
+                        <select id="editActivityUnit" name="unit" class="form-select" required>
+                            <option value="">Select unit</option>
+                            <option value="sqft">Square Feet</option>
+                            <option value="sqm">Square Meters</option>
+                            <option value="cuft">Cubic Feet</option>
+                            <option value="cum">Cubic Meters</option>
+                            <option value="lnft">Linear Feet</option>
+                            <option value="lnm">Linear Meters</option>
+                            <option value="pcs">Pieces</option>
+                            <option value="kg">Kilogram</option>
+                            <option value="ton">Ton</option>
+                            <option value="ltr">Liter</option>
+                            <option value="bags">Bags</option>
+                            <option value="hours">Hours</option>
+                            <option value="days">Days</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="updateActivity()">Update Activity</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Select All functionality
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const activityCheckboxes = document.querySelectorAll('.activity-checkbox');
+    
+    activityCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+    
+    updateBulkActions();
+}
+
+// Bulk actions functionality
+function updateBulkActions() {
+    const checkboxes = document.querySelectorAll('.activity-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    selectedCount.textContent = checkboxes.length;
+    
+    if (checkboxes.length > 0) {
+        bulkActions.classList.add('show');
+    } else {
+        bulkActions.classList.remove('show');
+    }
+}
+
+// Delete selected activities
+function deleteSelectedActivities() {
+    const checkboxes = document.querySelectorAll('.activity-checkbox:checked');
+    const activityIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (activityIds.length === 0) {
+        alert('Please select activities to delete');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to delete ${activityIds.length} selected activities?`)) {
+        // Process deletions one by one
+        deleteActivitiesBatch(activityIds);
+    }
+}
+
+// Make report from selected activities
+function makeReportFromSelected() {
+    const checkboxes = document.querySelectorAll('.activity-checkbox:checked');
+    const activityIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (activityIds.length === 0) {
+        alert('Please select activities to create report');
+        return;
+    }
+    
+    // Create form data with selected activities
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/projects/{{ project.id }}/reports/create/`;
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = csrfToken;
+    form.appendChild(csrfInput);
+    
+    // Add selected activity IDs and their completed quantities
+    activityIds.forEach(id => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'selected_activities';
+        input.value = id;
+        form.appendChild(input);
+        
+        // Also add completed quantity if available
+        const completedInput = document.getElementById(`completed-${id}`);
+        if (completedInput && completedInput.value) {
+            const completedField = document.createElement('input');
+            completedField.type = 'hidden';
+            completedField.name = `activity_completed_${id}`;
+            completedField.value = completedInput.value;
+            form.appendChild(completedField);
+        }
+    });
+    
+    // Submit form
+    document.body.appendChild(form);
+    form.submit();
+}
+
+// Batch delete function
+function deleteActivitiesBatch(activityIds) {
+    if (activityIds.length === 0) {
+        location.reload();
+        return;
+    }
+    
+    const activityId = activityIds.shift();
+    
+    fetch(`/activities/${activityId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Continue with next activity
+            deleteActivitiesBatch(activityIds);
+        } else {
+            alert(`Error deleting activity: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting activity');
+    });
+}
+
+// Edit activity function
+function editActivity(activityId) {
+    fetch(`/activities/${activityId}/edit/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('activityId').value = activityId;
+            document.getElementById('editActivityName').value = data.activity.name;
+            document.getElementById('editActivityUnit').value = data.activity.unit;
+            document.getElementById('editTotalQuantity').value = data.activity.total_quantity || '';
+            
+            new bootstrap.Modal(document.getElementById('editActivityModal')).show();
+        } else {
+            alert(data.message || 'Error loading activity');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error loading activity');
+    });
+}
+
+// Update activity function
+function updateActivity() {
+    const form = document.getElementById('editActivityForm');
+    const formData = new FormData(form);
+    const activityId = formData.get('activity_id');
+    
+    fetch(`/activities/${activityId}/update/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('editActivityModal')).hide();
+            location.reload();
+        } else {
+            alert(data.message || 'Error updating activity');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating activity');
+    });
+}
+
+// Delete single activity function
+function deleteActivity(activityId, activityName) {
+    if (confirm(`Are you sure you want to delete "${activityName}"?`)) {
+        fetch(`/activities/${activityId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Error deleting activity');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting activity');
+        });
+    }
+}
+
+// Form submission handling
+document.getElementById('activityForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const activityName = formData.get('activity_name');
+    
+    if (!activityName.trim()) {
+        alert('Please enter an activity name');
+        return;
+    }
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Error adding activity');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding activity');
+    });
+});
+
+// No initialization needed - progress bars removed for clean look
+</script>
+{% endblock %}

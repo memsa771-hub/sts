@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Team Members - Site Tracking System{% endblock %}
+{% block page_title %}Team Members{% endblock %}
+
+{% block content %}
+<div class="container-fluid sts-page">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="content-card">
+                <div class="d-flex justify-content-between align-items-center sts-page-header">
+                    <div>
+                        <h4 class="mb-1">Team Members</h4>
+                        <p class="text-muted mb-0">Manage all project team members across roles</p>
+                    </div>
+                    {% if user.role in 'admin,site_engineer' %}
+                    <a href="{% url 'create_team_member' %}" class="btn btn-primary">
+                        <i class="bi bi-person-plus"></i> Add Team Member
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="content-card">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search_query }}" placeholder="Search...">
+                            <label for="search"><i class="bi bi-search"></i> Search by Name, ID, or CNIC</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All Status</option>
+                                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                            </select>
+                            <label for="status"><i class="bi bi-check-circle"></i> Filter by Status</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100 h-100">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{% url 'team_members_list' %}" class="btn btn-outline-secondary w-100 h-100">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Team Members Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="content-card">
+                <div class="table-responsive">
+                    <table class="table table-hover sts-stack-table">
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Project</th>
+                                <th>CNIC</th>
+                                <th>Contact</th>
+                                <th>Joined Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in page_obj %}
+                            <tr>
+                                <td data-label="Employee ID"><span class="badge bg-secondary">{{ member.employee_id|default:"N/A" }}</span></td>
+                                <td data-label="Name">
+                                    <div class="fw-bold">{{ member.first_name }}</div>
+                                </td>
+                                <td data-label="Role">
+                                    {% if member.role %}
+                                    <span class="badge bg-info">{{ member.role }}</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Not Set</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Project">
+                                    {% if member.project %}
+                                    <div>{{ member.project.title }}</div>
+                                    <small class="text-muted">{{ member.project.location|truncatechars:25 }}</small>
+                                    {% else %}
+                                    <span class="text-muted">Not Assigned</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="CNIC">{{ member.cnic }}</td>
+                                <td data-label="Contact">
+                                    <div><i class="bi bi-telephone"></i> {{ member.contact_info }}</div>
+                                </td>
+                                <td data-label="Joined">{{ member.joined_date|date:"M d, Y" }}</td>
+                                <td data-label="Status">
+                                    {% if member.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td data-label="Actions">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'view_team_member' member.id %}" class="btn btn-outline-info" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        {% if user.role in 'admin,site_engineer' %}
+                                        <a href="{% url 'edit_team_member' member.id %}" class="btn btn-outline-primary" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'delete_team_member' member.id %}" class="btn btn-outline-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="9" class="text-center py-4">
+                                    <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
+                                    <p class="text-muted mt-2">No team members found.</p>
+                                    {% if user.role in 'admin,site_engineer' %}
+                                    <a href="{% url 'create_team_member' %}" class="btn btn-primary">
+                                        <i class="bi bi-person-plus"></i> Add First Team Member
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="d-flex justify-content-between align-items-center mt-4 sts-pagination-bar">
+                    <div class="text-muted">
+                        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} members
+                    </div>
+                    <nav>
+                        <ul class="pagination mb-0">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if role_filter %}&role={{ role_filter }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

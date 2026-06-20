@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page_title }} - Site Tracking System{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-clipboard-check"></i> {{ page_title }}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> <strong>RFI Workflow:</strong>
+                        <ol class="mb-0 mt-2">
+                            <li>Create RFI with project and inspection request details</li>
+                            <li>System generates shareable link with password</li>
+                            <li>Share link with inspectors (Site Inspector, Surveyor, Lab Technician, Material Engineer, ARE, Resident Engineer)</li>
+                            <li>Each inspector adds their comments via the link</li>
+                            <li>After all inspectors comment, you approve or disapprove</li>
+                        </ol>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Project Selection -->
+                        <div class="border-3 border-dark p-4 mb-4">
+                            <h5 class="border-bottom border-dark pb-2 mb-3">PROJECT INFORMATION</h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.project.id_for_label }}" class="form-label fw-bold">
+                                    Project: <span class="text-danger">*</span>
+                                </label>
+                                {{ form.project }}
+                                {% if form.project.errors %}
+                                <div class="text-danger small">{{ form.project.errors|first }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- RFI Details -->
+                        <div class="border-3 border-dark p-4 mb-4">
+                            <h5 class="border-bottom border-dark pb-2 mb-3">RFI FOR:</h5>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.request_description.id_for_label }}" class="form-label fw-bold">
+                                    Request Description: <span class="text-danger">*</span>
+                                </label>
+                                {{ form.request_description }}
+                                {% if form.request_description.errors %}
+                                <div class="text-danger small">{{ form.request_description.errors|first }}</div>
+                                {% endif %}
+                                <small class="text-muted">Describe what needs to be inspected or approved</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.attachment_file.id_for_label }}" class="form-label fw-bold">
+                                    Attachments (Optional):
+                                </label>
+                                {{ form.attachment_file }}
+                                {% if form.attachment_file.errors %}
+                                <div class="text-danger small">{{ form.attachment_file.errors|first }}</div>
+                                {% endif %}
+                                <small class="text-muted">Upload drawings, specifications, photos, etc.</small>
+                            </div>
+                        </div>
+
+                        <!-- Submission Details -->
+                        <div class="border-3 border-dark p-4 mb-4">
+                            <h5 class="border-bottom border-dark pb-2 mb-3">CREATED BY (SITE ENGINEER)</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.submission_date.id_for_label }}" class="form-label fw-bold">
+                                        Date: <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.submission_date }}
+                                    {% if form.submission_date.errors %}
+                                    <div class="text-danger small">{{ form.submission_date.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.submission_time.id_for_label }}" class="form-label fw-bold">
+                                        Time: <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.submission_time }}
+                                    {% if form.submission_time.errors %}
+                                    <div class="text-danger small">{{ form.submission_time.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="{{ form.submitted_by_name.id_for_label }}" class="form-label fw-bold">
+                                        Created By: <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.submitted_by_name }}
+                                    {% if form.submitted_by_name.errors %}
+                                    <div class="text-danger small">{{ form.submitted_by_name.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Inspection Schedule (Optional) -->
+                        <div class="border-3 border-dark p-4 mb-4">
+                            <h5 class="border-bottom border-dark pb-2 mb-3">INSPECTION SCHEDULE (OPTIONAL)</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.inspection_date.id_for_label }}" class="form-label fw-bold">
+                                        Scheduled Inspection Date:
+                                    </label>
+                                    {{ form.inspection_date }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.inspection_time.id_for_label }}" class="form-label fw-bold">
+                                        Scheduled Inspection Time:
+                                    </label>
+                                    {{ form.inspection_time }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security (Auto-generated) -->
+                        <div class="border-3 border-dark p-4 mb-4 bg-light">
+                            <h5 class="border-bottom border-dark pb-2 mb-3">
+                                <i class="bi bi-shield-lock"></i> SECURITY
+                            </h5>
+                            <div class="alert alert-success mb-0">
+                                <i class="bi bi-check-circle"></i> 
+                                <strong>Access Password:</strong> 
+                                {% if form.access_password.value %}
+                                <code class="fs-5 ms-2">{{ form.access_password.value }}</code>
+                                {% else %}
+                                <span class="ms-2">Will be auto-generated (6 characters)</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">Share this password with inspectors along with the link</small>
+                            </div>
+                            {{ form.access_password }}
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <a href="{% url 'rfi_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-send"></i> Create RFI & Generate Share Link
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-fill current date and time
+document.addEventListener('DOMContentLoaded', function() {
+    const submissionDate = document.querySelector('[name="submission_date"]');
+    const submissionTime = document.querySelector('[name="submission_time"]');
+    
+    if (submissionDate && !submissionDate.value) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        submissionDate.value = `${year}-${month}-${day}`;
+    }
+    
+    if (submissionTime && !submissionTime.value) {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        submissionTime.value = `${hours}:${minutes}`;
+    }
+});
+</script>
+{% endblock %}

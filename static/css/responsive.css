@@ -1,0 +1,558 @@
+/* ============================================================
+   STS — Global Responsive Styles (all devices)
+   Breakpoints aligned with Bootstrap 5:
+   sm 576px | md 768px | lg 992px | xl 1200px
+   ============================================================ */
+
+/* ---- Page containers & spacing ---- */
+.sts-page,
+.report-container,
+.activities-container,
+.rfi-container,
+.project-detail-container {
+    padding: clamp(12px, 3vw, 32px) !important;
+}
+
+.container-fluid.sts-page,
+.container-fluid:not(.no-padding) {
+    padding-left: clamp(12px, 3vw, 24px);
+    padding-right: clamp(12px, 3vw, 24px);
+    padding-top: clamp(12px, 2vw, 24px);
+    padding-bottom: clamp(12px, 2vw, 24px);
+}
+
+.content-card {
+    padding: clamp(16px, 3vw, 24px);
+}
+
+.sts-messages {
+    padding: clamp(0.75rem, 2vw, 1rem) clamp(12px, 3vw, 2rem) 0;
+}
+
+/* ---- Page headers ---- */
+.sts-page-header,
+.page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.sts-page-header > .btn,
+.sts-page-header > a.btn,
+.page-header > .btn,
+.page-header > a.btn {
+    flex-shrink: 0;
+}
+
+@media (max-width: 575.98px) {
+    .sts-page-header,
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .sts-page-header .btn,
+    .sts-page-header a.btn,
+    .page-header .btn,
+    .page-header a.btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .d-flex.justify-content-between.align-items-center:not(.no-stack) {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+
+    .d-flex.justify-content-between.align-items-center:not(.no-stack) > .btn,
+    .d-flex.justify-content-between.align-items-center:not(.no-stack) > a.btn {
+        width: 100%;
+    }
+}
+
+/* ---- Top navbar (base.html) ---- */
+.top-navbar {
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.top-navbar > div:first-child {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    gap: 8px;
+}
+
+.top-navbar h5 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+@media (max-width: 991.98px) {
+    .top-navbar {
+        padding: 12px 16px 12px 56px !important;
+    }
+
+    .top-navbar h5 {
+        font-size: 16px !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .top-navbar {
+        padding: 10px 12px 10px 48px !important;
+    }
+
+    .user-info .user-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+}
+
+/* ---- Action button rows ---- */
+.action-buttons,
+.form-actions,
+.submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+@media (max-width: 575.98px) {
+    .action-buttons .btn,
+    .form-actions .btn,
+    .submit-row .btn {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+}
+
+/* ---- Tables: horizontal scroll fallback ---- */
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+}
+
+/* ---- Stacked table pattern (mobile cards) ---- */
+@media (max-width: 767.98px) {
+    .sts-stack-table thead {
+        display: none;
+    }
+
+    .sts-stack-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+    }
+
+    .sts-stack-table tbody tr:hover {
+        background: #fff;
+    }
+
+    .sts-stack-table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 10px 14px !important;
+        border: none !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+        text-align: right !important;
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    .sts-stack-table tbody td:last-child {
+        border-bottom: none !important;
+    }
+
+    .sts-stack-table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 12px;
+        color: var(--text-secondary, #6b7280);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        text-align: left;
+        flex-shrink: 0;
+        max-width: 45%;
+    }
+
+    .sts-stack-table tbody td[data-label="Actions"],
+    .sts-stack-table tbody td[data-label="Action"] {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .sts-stack-table tbody td[data-label="Actions"]::before,
+    .sts-stack-table tbody td[data-label="Action"]::before {
+        margin-bottom: 4px;
+    }
+
+    .sts-stack-table .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sts-stack-table .btn-group .btn {
+        width: 100%;
+        border-radius: 6px !important;
+        margin: 2px 0;
+    }
+}
+
+/* ---- Activities table (daily report create) — stack on mobile ---- */
+@media (max-width: 767.98px) {
+    .activities-table.sts-mobile-stack thead {
+        display: none;
+    }
+
+    .activities-table.sts-mobile-stack tbody tr {
+        display: block;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 12px;
+        padding: 4px 0;
+        background: #fff;
+    }
+
+    .activities-table.sts-mobile-stack tbody td {
+        display: block;
+        width: 100% !important;
+        min-width: 0 !important;
+        padding: 12px 16px !important;
+        border-bottom: 1px solid #f3f4f6;
+        text-align: left !important;
+    }
+
+    .activities-table.sts-mobile-stack tbody td::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #5b8fd8;
+        margin-bottom: 8px;
+    }
+
+    .activities-table.sts-mobile-stack tbody td:last-child {
+        border-bottom: none;
+    }
+
+    .activities-table.sts-mobile-stack .quantity-row,
+    .activities-table.sts-mobile-stack .progress-bar-container,
+    .activities-table.sts-mobile-stack .progress-slider-row {
+        max-width: 100% !important;
+    }
+
+    .activities-table.sts-mobile-stack .progress-cell {
+        min-width: 0 !important;
+    }
+
+    .activities-table.sts-mobile-stack .file-input {
+        min-width: 0 !important;
+        width: 100%;
+    }
+
+    .activities-table.sts-mobile-stack .status-select,
+    .activities-table.sts-mobile-stack .remarks-input {
+        width: 100%;
+    }
+
+    .activities-table.sts-mobile-stack .activity-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--primary-color, #673de6);
+    }
+
+    .activities-table.sts-mobile-stack .activity-name::before {
+        display: none;
+    }
+}
+
+/* ---- Modals ---- */
+@media (max-width: 575.98px) {
+    .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    .modal-dialog.modal-lg,
+    .modal-dialog.modal-xl {
+        max-width: calc(100% - 1rem);
+    }
+
+    .modal-fullscreen-sm-down {
+        width: 100vw;
+        max-width: none;
+        height: 100%;
+        margin: 0;
+    }
+}
+
+/* ---- Forms & filters ---- */
+@media (max-width: 767.98px) {
+    .form-floating .form-control,
+    .form-floating .form-select {
+        font-size: 16px; /* prevents iOS zoom on focus */
+    }
+
+    .row.g-3 .col-md-2 .btn,
+    .row.g-3 .col-md-3 .btn {
+        min-height: 48px;
+    }
+}
+
+/* ---- Pagination bars ---- */
+@media (max-width: 767.98px) {
+    .sts-pagination-bar {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .pagination .page-link {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+/* ---- Stats cards ---- */
+@media (max-width: 575.98px) {
+    .stats-card {
+        padding: 16px;
+    }
+
+    .stats-card .card-number {
+        font-size: 26px;
+    }
+}
+
+/* ---- RFI detail page ---- */
+@media (max-width: 991.98px) {
+    .rfi-container .page-header-row {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+
+    .rfi-container .action-buttons {
+        width: 100%;
+    }
+
+    .rfi-container .action-buttons .btn {
+        flex: 1 1 auto;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .rfi-container {
+        padding: 12px !important;
+    }
+
+    .rfi-container .stat-card {
+        padding: 20px;
+    }
+
+    .rfi-container .progress-ring {
+        width: 90px;
+        height: 90px;
+    }
+
+    .rfi-container .progress-percentage {
+        font-size: 22px;
+    }
+
+    .rfi-container .stakeholder-strip {
+        flex-direction: column !important;
+    }
+
+    .rfi-container .stakeholder-item {
+        width: 100% !important;
+    }
+
+    .rfi-container .description-box {
+        padding: 16px !important;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .rfi-container .action-buttons .btn {
+        width: 100%;
+    }
+}
+
+/* ---- View daily report ---- */
+@media (max-width: 767.98px) {
+    .report-container .info-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    .report-container .report-header {
+        padding: 20px 16px !important;
+    }
+
+    .report-container .report-header h1 {
+        font-size: 22px !important;
+    }
+
+    .report-container .report-body {
+        padding: 16px !important;
+    }
+
+    .report-branding {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* ---- Activities list page ---- */
+@media (max-width: 991.98px) {
+    .activity-form {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .activity-form .btn-add {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .activity-form {
+        grid-template-columns: 1fr !important;
+    }
+
+    .activity-section {
+        padding: 16px !important;
+    }
+}
+
+/* ---- Project detail ---- */
+@media (max-width: 767.98px) {
+    .project-detail-container .detail-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+
+    .project-detail-container .detail-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ---- Dashboard ---- */
+@media (max-width: 575.98px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+}
+
+/* ---- Workers list ---- */
+@media (max-width: 767.98px) {
+    .workers-container {
+        padding: 12px !important;
+    }
+
+    .workers-header {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* ---- Auth & landing (standalone pages) ---- */
+@media (max-width: 575.98px) {
+    .auth-card,
+    .login-card,
+    .register-card {
+        margin: 12px;
+        padding: 24px 20px !important;
+    }
+
+    .hero-section h1 {
+        font-size: 1.75rem !important;
+    }
+
+    .hero-section .lead {
+        font-size: 1rem !important;
+    }
+}
+
+/* ---- Utility: hide columns on small screens ---- */
+@media (max-width: 767.98px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .show-mobile-only {
+        display: none !important;
+    }
+}
+
+/* ---- Prevent horizontal overflow globally ---- */
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ---- Touch-friendly tap targets ---- */
+@media (max-width: 767.98px) {
+    .btn, .nav-link, .form-control, .form-select {
+        min-height: 44px;
+    }
+
+    .btn-sm {
+        min-height: 36px;
+    }
+
+    .sidebar .nav-link {
+        padding: 12px 20px;
+    }
+}
+
+/* ---- Print: keep existing behaviour ---- */
+@media print {
+    .sts-stack-table thead {
+        display: table-header-group !important;
+    }
+
+    .sts-stack-table tbody tr {
+        display: table-row !important;
+    }
+
+    .sts-stack-table tbody td {
+        display: table-cell !important;
+    }
+
+    .sts-stack-table tbody td::before {
+        display: none !important;
+    }
+}

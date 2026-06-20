@@ -1,0 +1,611 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Site Tracking System{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Specific Styles */
+    .dashboard-wrapper {
+        padding: clamp(12px, 3vw, 32px);
+        max-width: 1600px;
+    }
+    
+    /* Dashboard Row */
+    .dashboard-row {
+        margin: 0 0 24px 0;
+    }
+    
+    /* Welcome Banner */
+    .welcome-banner {
+        background: white;
+        color: var(--text-primary);
+        padding: 0;
+        margin: 0 0 24px 0;
+        border-radius: 0;
+        box-shadow: none;
+        border: none;
+    }
+    
+    .welcome-banner h2 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        color: var(--text-primary);
+    }
+    
+    .welcome-banner p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+    
+    /* Stats Cards Row */
+    .stats-section {
+        background: transparent;
+        padding: 0;
+        margin: 0 0 24px 0;
+    }
+    
+    .stats-card {
+        background: white;
+        padding: 24px;
+        margin: 0;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+        height: 100%;
+        box-shadow: var(--card-shadow);
+    }
+    
+    .stats-card:hover {
+        box-shadow: var(--card-hover-shadow);
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+    }
+    
+    .stats-card .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+    
+    .stats-card .card-number {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 8px 0;
+        line-height: 1;
+        color: var(--text-primary);
+    }
+    
+    .stats-card .card-title {
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: none;
+        margin-bottom: 4px;
+        color: var(--text-primary);
+    }
+    
+    .stats-card .card-subtitle {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    
+    .stats-col {
+        padding: 0 12px;
+        margin-bottom: 24px;
+    }
+    
+    /* Content Sections */
+    .content-section {
+        background: white;
+        padding: 24px;
+        margin: 0;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        height: 100%;
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .section-header h5 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+    
+    /* Table Improvements */
+    .table-responsive {
+        margin: 0;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .table {
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+    
+    .table thead th {
+        background: var(--bg-light);
+        border-bottom: 1px solid var(--border-color);
+        font-weight: 600;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding: 12px 16px;
+        color: var(--text-secondary);
+        border-top: none;
+    }
+    
+    .table tbody td {
+        padding: 16px;
+        vertical-align: middle;
+        font-size: 14px;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+    
+    .table tbody tr {
+        transition: background-color 0.2s;
+    }
+    
+    .table tbody tr:hover {
+        background-color: var(--bg-light);
+    }
+    
+    .table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    /* Recent Activity Sidebar */
+    .activity-sidebar {
+        background: white;
+        padding: 24px;
+        margin: 0;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        height: 100%;
+    }
+    
+    .activity-item {
+        padding: 16px;
+        background: var(--bg-light);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+    }
+    
+    .activity-item:hover {
+        border-color: var(--primary-color);
+        box-shadow: var(--card-shadow);
+    }
+    
+    .activity-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1199.98px) {
+        .stats-card .card-number {
+            font-size: 2rem;
+        }
+    }
+    
+    @media (max-width: 991.98px) {
+        .dashboard-wrapper {
+            padding: 24px;
+        }
+        
+        .content-section {
+            padding: 20px;
+        }
+        
+        .activity-sidebar {
+            padding: 20px;
+            margin-top: 24px;
+        }
+        
+        .stats-col {
+            padding: 0 8px;
+        }
+    }
+    
+    @media (max-width: 767.98px) {
+        .dashboard-wrapper {
+            padding: 16px;
+        }
+        
+        .welcome-banner h2 {
+            font-size: 24px;
+        }
+        
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .stats-col {
+            padding: 0 0;
+            margin-bottom: 16px;
+        }
+    }
+    
+    @media (max-width: 575.98px) {
+        .dashboard-wrapper {
+            padding: 16px;
+        }
+        
+        .content-section {
+            padding: 16px;
+        }
+        
+        .stats-card .card-number {
+            font-size: 28px;
+        }
+        
+        .table {
+            font-size: 13px;
+        }
+        
+        .table thead th,
+        .table tbody td {
+            padding: 12px;
+        }
+    }
+    
+    /* Button Styles */
+    .btn-gradient {
+        background: var(--primary-color);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    
+    .btn-gradient:hover {
+        background: var(--primary-hover);
+        box-shadow: 0 4px 12px rgba(103, 61, 230, 0.3);
+        color: white;
+    }
+    
+    .btn-outline-primary {
+        border-color: var(--border-color);
+        color: var(--text-primary);
+        background: white;
+        font-size: 14px;
+    }
+    
+    .btn-outline-primary:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background: var(--sidebar-hover);
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+    
+    /* Progress Bar */
+    .progress {
+        height: 6px;
+        border-radius: 10px;
+        background-color: #e5e7eb;
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+        background: var(--primary-color);
+    }
+    
+    /* Content Row */
+    .content-row {
+        margin: 0 0 24px 0;
+    }
+    
+    .content-col {
+        padding: 0 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <h2>Hello, {{ user.first_name }}!</h2>
+        <p>Here's what's happening with your construction projects today</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row stats-section">
+        <div class="col-xl-3 col-lg-6 col-sm-6 stats-col">
+            <div class="stats-card total-projects">
+                <div class="card-icon">
+                    <i class="bi bi-folder"></i>
+                </div>
+                <div class="card-number">{{ total_projects }}</div>
+                <div class="card-title">Total Projects</div>
+                <div class="card-subtitle">All available projects</div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-sm-6 stats-col">
+            <div class="stats-card occupied-projects">
+                <div class="card-icon">
+                    <i class="bi bi-play-circle-fill"></i>
+                </div>
+                <div class="card-number">{{ ongoing_projects }}</div>
+                <div class="card-title">Ongoing Projects</div>
+                <div class="card-subtitle">Currently active</div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-sm-6 stats-col">
+            <div class="stats-card upcoming-reports">
+                <div class="card-icon">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                <div class="card-number">{{ upcoming_reports }}</div>
+                <div class="card-title">Upcoming Reports</div>
+                <div class="card-subtitle">Next 24 hours</div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-lg-6 col-sm-6 stats-col">
+            <div class="stats-card night-audit">
+                <div class="card-icon">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <div class="card-number">{{ completed_projects }}</div>
+                <div class="card-title">Completed Projects</div>
+                <div class="card-subtitle">Ready for review</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row content-row">
+        <!-- Project Status Overview -->
+        <div class="col-lg-8 content-col">
+            <div class="content-section">
+                <div class="section-header">
+                    <h5>Project Status Overview</h5>
+                </div>
+                
+                <!-- Project Status Table -->
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Project</th>
+                                <th>Location</th>
+                                <th>Progress</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for project in projects %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">{{ project.title }}</div>
+                                    <small class="text-muted">{% if project.site_engineer %}{{ project.site_engineer.display_name }}{% else %}No engineer assigned{% endif %}</small>
+                                </td>
+                                <td>{{ project.location|truncatechars:30 }}</td>
+                                <td>
+                                    <div class="progress mb-1">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {{ project.progress_percentage }}%"></div>
+                                    </div>
+                                    <small class="text-muted">{{ project.progress_percentage }}%</small>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ project.status }}">
+                                        {{ project.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'project_detail' project.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    <i class="bi bi-folder-x fs-1 d-block mb-2"></i>
+                                    <p class="mb-0">No projects found</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if projects %}
+                <div class="text-center mt-4">
+                    <a href="{% url 'projects_list' %}" class="btn btn-gradient">
+                        View All Projects <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recent Activity Sidebar -->
+        <div class="col-lg-4 content-col">
+            <div class="activity-sidebar">
+                <div class="section-header">
+                    <h5>Recent Activity</h5>
+                </div>
+                
+                <!-- Recent Notifications -->
+                <div class="notifications-list">
+                    {% for notification in notifications %}
+                    <div class="activity-item">
+                        <div class="d-flex align-items-start">
+                            <div class="me-3">
+                                {% if notification.notification_type == 'report_submitted' %}
+                                <i class="bi bi-file-earmark-plus fs-5 text-primary"></i>
+                                {% elif notification.notification_type == 'report_approved' %}
+                                <i class="bi bi-check-circle fs-5 text-success"></i>
+                                {% elif notification.notification_type == 'report_rejected' %}
+                                <i class="bi bi-x-circle fs-5 text-danger"></i>
+                                {% else %}
+                                <i class="bi bi-info-circle fs-5 text-info"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold mb-1" style="font-size: 14px;">{{ notification.title }}</div>
+                                <div class="text-muted mb-1" style="font-size: 13px;">{{ notification.message|truncatechars:70 }}</div>
+                                <div class="text-muted" style="font-size: 12px;">
+                                    <i class="bi bi-clock me-1"></i>{{ notification.created_at|timesince }} ago
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-bell-slash" style="font-size: 48px; opacity: 0.2; display: block; margin-bottom: 12px;"></i>
+                        <p class="mb-0" style="font-size: 14px;">No new notifications</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                {% if notifications %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'notifications_list' %}" class="btn btn-outline-primary btn-sm w-100">
+                        View All Notifications
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Reports (for Site Engineers and Project Managers) -->
+    {% if recent_reports and user.role in 'site_engineer,consultant' %}
+    <div class="row content-row">
+        <div class="col-12 content-col">
+            <div class="content-section">
+                <div class="section-header">
+                    <h5>Recent Daily Reports</h5>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Project</th>
+                                <th>Weather</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in recent_reports %}
+                            <tr>
+                                <td>{{ report.date|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="fw-bold">{{ report.project.title }}</div>
+                                    <small class="text-muted">{{ report.site_engineer.display_name }}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">{{ report.get_weather_display }}</span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-{{ report.status }}">
+                                        {{ report.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    {% if user.role == 'consultant' and report.status == 'pending' %}
+                                    <button class="btn btn-sm btn-outline-success ms-1">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'daily_reports_list' %}" class="btn btn-gradient">
+                        View All Reports <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Project Selection Modal for Report Creation -->
+{% if user.role == 'site_engineer' %}
+<div class="modal fade" id="projectSelectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Project for Daily Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group">
+                    {% for project in projects %}
+                    {% if project.status == 'ongoing' %}
+                    <a href="{% url 'create_daily_report' project.id %}" class="list-group-item list-group-item-action">
+                        <div class="fw-bold">{{ project.title }}</div>
+                        <small class="text-muted">{{ project.location }}</small>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function showProjectSelection() {
+        const modal = new bootstrap.Modal(document.getElementById('projectSelectionModal'));
+        modal.show();
+    }
+    
+    // Dashboard charts can be added here
+    // Example: Progress chart, activity chart, etc.
+</script>
+{% endblock %}

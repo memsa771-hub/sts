@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Team Member - Site Tracking System{% endblock %}
+{% block page_title %}Edit Team Member{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>
+                        <i class="bi bi-pencil-square text-primary"></i> 
+                        Edit Team Member
+                    </h2>
+                    <p class="text-muted">Update team member information</p>
+                </div>
+                <a href="{% url 'team_members_list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to List
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i> 
+                        Team Member Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            {{ form.non_field_errors }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row g-3">
+                            <!-- First Name -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.first_name }}
+                                    <label for="{{ form.first_name.id_for_label }}">
+                                        <i class="bi bi-person me-2"></i>First Name <span class="text-danger">*</span>
+                                    </label>
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.first_name.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Role -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.role }}
+                                    <label for="{{ form.role.id_for_label }}">
+                                        <i class="bi bi-briefcase me-2"></i>Job Role/Designation
+                                    </label>
+                                    {% if form.role.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.role.errors|first }}</div>
+                                    {% else %}
+                                        <small class="form-text">e.g., Site Supervisor, Electrician, Mason, etc.</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Project Assignment -->
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    {{ form.project }}
+                                    <label for="{{ form.project.id_for_label }}">
+                                        <i class="bi bi-folder me-2"></i>Assign Project
+                                    </label>
+                                    {% if form.project.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.project.errors|first }}</div>
+                                    {% else %}
+                                        <small class="form-text">Optional - Assign team member to a project</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- CNIC -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.cnic }}
+                                    <label for="{{ form.cnic.id_for_label }}">
+                                        <i class="bi bi-card-text me-2"></i>CNIC Number <span class="text-danger">*</span>
+                                    </label>
+                                    {% if form.cnic.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.cnic.errors|first }}</div>
+                                    {% else %}
+                                        <small class="form-text">Format: 12345-1234567-1</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Contact Info -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.contact_info }}
+                                    <label for="{{ form.contact_info.id_for_label }}">
+                                        <i class="bi bi-telephone me-2"></i>Contact Number <span class="text-danger">*</span>
+                                    </label>
+                                    {% if form.contact_info.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.contact_info.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Address -->
+                            <div class="col-12">
+                                <label for="{{ form.address.id_for_label }}" class="form-label">
+                                    <i class="bi bi-geo-alt me-2"></i>Address
+                                </label>
+                                {{ form.address }}
+                                {% if form.address.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.address.errors|first }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Joined Date -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    {{ form.joined_date }}
+                                    <label for="{{ form.joined_date.id_for_label }}">
+                                        <i class="bi bi-calendar me-2"></i>Joined Date <span class="text-danger">*</span>
+                                    </label>
+                                    {% if form.joined_date.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.joined_date.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Is Active -->
+                            <div class="col-md-6">
+                                <div class="form-check form-switch p-4" style="background: #f8f9fa; border-radius: 8px;">
+                                    {{ form.is_active }}
+                                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                        <i class="bi bi-check-circle me-2"></i>Active Status
+                                    </label>
+                                    {% if form.is_active.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.is_active.errors|first }}</div>
+                                    {% else %}
+                                        <small class="form-text d-block">Uncheck to deactivate this team member</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="mt-4 d-flex gap-2 justify-content-end">
+                            <a href="{% url 'team_members_list' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Update Team Member
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+}
+
+.card-header {
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+}
+</style>
+
+<script>
+// Auto-format CNIC input
+document.addEventListener('DOMContentLoaded', function() {
+    const cnicInput = document.getElementById('{{ form.cnic.id_for_label }}');
+    if (cnicInput) {
+        cnicInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value.length <= 5) {
+                    e.target.value = value;
+                } else if (value.length <= 12) {
+                    e.target.value = value.slice(0, 5) + '-' + value.slice(5);
+                } else {
+                    e.target.value = value.slice(0, 5) + '-' + value.slice(5, 12) + '-' + value.slice(12, 13);
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

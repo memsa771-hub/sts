@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFI - {{ rfi.rfi_number }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f5f7fa;
+        }
+        .header-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .rfi-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        .rfi-card-header {
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            padding: 1.25rem;
+            border-radius: 10px 10px 0 0;
+        }
+        .rfi-card-body {
+            padding: 1.5rem;
+        }
+        .inspector-section {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+        .inspector-section.responded {
+            border-left-color: #28a745;
+            background: #f0f9f4;
+        }
+        .badge-responded {
+            background: #28a745;
+        }
+        .badge-pending {
+            background: #ffc107;
+        }
+        .response-form {
+            background: white;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .brand-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .brand-logo {
+            width: 72px;
+            height: 72px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            object-fit: contain;
+            background: #fff;
+            padding: 4px;
+        }
+
+        .brand-logo.placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #adb5bd;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .stakeholder-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .stakeholder-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .stakeholder-item .label {
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .stakeholder-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header-bar">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-2"><i class="bi bi-clipboard-check"></i> Request for Inspection</h2>
+                    <h4 class="mb-0">{{ rfi.rfi_number }}</h4>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-light text-dark fs-6">
+                        <i class="bi bi-calendar"></i> {{ rfi.submission_date|date:"M d, Y" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container pb-5">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Project Information -->
+        <div class="rfi-card">
+            <div class="rfi-card-header">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Project Information</h5>
+            </div>
+            <div class="rfi-card-body">
+                <div class="brand-row">
+                    {% if rfi.project.client_logo %}
+                    <img class="brand-logo" src="{% url 'serve_project_logo_shared' rfi.share_token 'client' %}" alt="Client Logo">
+                    {% else %}
+                    <div class="brand-logo placeholder">Client Logo</div>
+                    {% endif %}
+
+                    {% if rfi.project.contractor_logo %}
+                    <img class="brand-logo" src="{% url 'serve_project_logo_shared' rfi.share_token 'contractor' %}" alt="Contractor Logo">
+                    {% else %}
+                    <div class="brand-logo placeholder">Contractor Logo</div>
+                    {% endif %}
+                </div>
+
+                <div class="stakeholder-grid mb-3">
+                    <div class="stakeholder-item">
+                        <div class="label">Client</div>
+                        {{ rfi.project.client_display }}
+                    </div>
+                    <div class="stakeholder-item">
+                        <div class="label">Contractor</div>
+                        {{ rfi.project.contractor_display }}
+                    </div>
+                    <div class="stakeholder-item">
+                        <div class="label">Consultant</div>
+                        {{ rfi.project.consultant_display }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <strong>Project:</strong><br>
+                        {{ rfi.project.title }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Location:</strong><br>
+                        {{ rfi.project.location }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Submitted By:</strong><br>
+                        {{ rfi.submitted_by_name }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <strong>Submission Time:</strong><br>
+                        {{ rfi.submission_date|date:"M d, Y" }} at {{ rfi.submission_time|time:"g:i A" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inspection Request Details -->
+        <div class="rfi-card">
+            <div class="rfi-card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Inspection Request Details</h5>
+            </div>
+            <div class="rfi-card-body">
+                <div class="mb-3">
+                    <strong>Scheduled Inspection:</strong><br>
+                    {% if rfi.inspection_date %}
+                        {{ rfi.inspection_date|date:"M d, Y" }} at {{ rfi.inspection_time|time:"g:i A" }}
+                    {% else %}
+                        <span class="text-muted">Not scheduled yet</span>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <strong>Request Description:</strong><br>
+                    <div class="p-3 bg-light rounded mt-2">
+                        {{ rfi.request_description|linebreaks }}
+                    </div>
+                </div>
+                {% if rfi.attachments %}
+                <div class="mb-3">
+                    <strong>Attachments:</strong><br>
+                    <a class="btn btn-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}" download>
+                        <i class="bi bi-download"></i> Download Attachment
+                    </a>
+                </div>
+                {% endif %}
+                {% if rfi.inspection_results %}
+                <div class="mb-3">
+                    <strong>Inspection Results:</strong><br>
+                    <div class="p-3 bg-success bg-opacity-10 rounded mt-2">
+                        {{ rfi.inspection_results|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Inspector Responses Status -->
+        <div class="rfi-card">
+            <div class="rfi-card-header">
+                <h5 class="mb-0"><i class="bi bi-people"></i> Inspector Responses</h5>
+            </div>
+            <div class="rfi-card-body">
+                <!-- Site Inspector -->
+                <div class="inspector-section {% if rfi.site_inspector_response %}responded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-person-badge"></i> Site Inspector
+                                {% if rfi.site_inspector_response %}
+                                <span class="badge badge-responded ms-2">Responded</span>
+                                {% else %}
+                                <span class="badge badge-pending ms-2">Pending</span>
+                                {% endif %}
+                            </h6>
+                            {% if rfi.site_inspector_name %}
+                            <p class="mb-1"><strong>Name:</strong> {{ rfi.site_inspector_name }}</p>
+                            {% endif %}
+                            {% if rfi.site_inspector_response %}
+                            <p class="mb-1"><strong>Response:</strong></p>
+                            <div class="bg-white p-2 rounded">{{ rfi.site_inspector_response }}</div>
+                            {% if rfi.site_inspector_attachment %}
+                            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}?role=site_inspector" download>
+                                <i class="bi bi-paperclip"></i> Download Attachment
+                            </a>
+                            {% endif %}
+                            <small class="text-muted">Responded: {{ rfi.site_inspector_responded_at|date:"M d, Y g:i A" }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Surveyor -->
+                <div class="inspector-section {% if rfi.surveyor_response %}responded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-compass"></i> Surveyor
+                                {% if rfi.surveyor_response %}
+                                <span class="badge badge-responded ms-2">Responded</span>
+                                {% else %}
+                                <span class="badge badge-pending ms-2">Pending</span>
+                                {% endif %}
+                            </h6>
+                            {% if rfi.surveyor_name %}
+                            <p class="mb-1"><strong>Name:</strong> {{ rfi.surveyor_name }}</p>
+                            {% endif %}
+                            {% if rfi.surveyor_response %}
+                            <p class="mb-1"><strong>Response:</strong></p>
+                            <div class="bg-white p-2 rounded">{{ rfi.surveyor_response }}</div>
+                            {% if rfi.surveyor_attachment %}
+                            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}?role=surveyor" download>
+                                <i class="bi bi-paperclip"></i> Download Attachment
+                            </a>
+                            {% endif %}
+                            <small class="text-muted">Responded: {{ rfi.surveyor_responded_at|date:"M d, Y g:i A" }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lab Technician -->
+                <div class="inspector-section {% if rfi.lab_technician_response %}responded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-flask"></i> Lab Technician
+                                {% if rfi.lab_technician_response %}
+                                <span class="badge badge-responded ms-2">Responded</span>
+                                {% else %}
+                                <span class="badge badge-pending ms-2">Pending</span>
+                                {% endif %}
+                            </h6>
+                            {% if rfi.lab_technician_name %}
+                            <p class="mb-1"><strong>Name:</strong> {{ rfi.lab_technician_name }}</p>
+                            {% endif %}
+                            {% if rfi.lab_technician_response %}
+                            <p class="mb-1"><strong>Response:</strong></p>
+                            <div class="bg-white p-2 rounded">{{ rfi.lab_technician_response }}</div>
+                            {% if rfi.lab_technician_attachment %}
+                            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}?role=lab_technician" download>
+                                <i class="bi bi-paperclip"></i> Download Attachment
+                            </a>
+                            {% endif %}
+                            <small class="text-muted">Responded: {{ rfi.lab_technician_responded_at|date:"M d, Y g:i A" }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Material Engineer -->
+                <div class="inspector-section {% if rfi.material_engineer_response %}responded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-tools"></i> Material Engineer
+                                {% if rfi.material_engineer_response %}
+                                <span class="badge badge-responded ms-2">Responded</span>
+                                {% else %}
+                                <span class="badge badge-pending ms-2">Pending</span>
+                                {% endif %}
+                            </h6>
+                            {% if rfi.material_engineer_name %}
+                            <p class="mb-1"><strong>Name:</strong> {{ rfi.material_engineer_name }}</p>
+                            {% endif %}
+                            {% if rfi.material_engineer_response %}
+                            <p class="mb-1"><strong>Response:</strong></p>
+                            <div class="bg-white p-2 rounded">{{ rfi.material_engineer_response }}</div>
+                            {% if rfi.material_engineer_attachment %}
+                            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}?role=material_engineer" download>
+                                <i class="bi bi-paperclip"></i> Download Attachment
+                            </a>
+                            {% endif %}
+                            <small class="text-muted">Responded: {{ rfi.material_engineer_responded_at|date:"M d, Y g:i A" }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- A.R.E -->
+                <div class="inspector-section {% if rfi.are_response %}responded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-award"></i> A.R.E
+                                {% if rfi.are_response %}
+                                <span class="badge badge-responded ms-2">Responded</span>
+                                {% else %}
+                                <span class="badge badge-pending ms-2">Pending</span>
+                                {% endif %}
+                            </h6>
+                            {% if rfi.are_name %}
+                            <p class="mb-1"><strong>Name:</strong> {{ rfi.are_name }}</p>
+                            {% endif %}
+                            {% if rfi.are_response %}
+                            <p class="mb-1"><strong>Response:</strong></p>
+                            <div class="bg-white p-2 rounded">{{ rfi.are_response }}</div>
+                            {% if rfi.are_attachment %}
+                            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}?role=are" download>
+                                <i class="bi bi-paperclip"></i> Download Attachment
+                            </a>
+                            {% endif %}
+                            <small class="text-muted">Responded: {{ rfi.are_responded_at|date:"M d, Y g:i A" }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Resident Engineer -->
+                <div class="inspector-section {% if rfi.resident_engineer_response %}responded{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h6 class="mb-1">
+                                <i class="bi bi-person-check"></i> Resident Engineer
+                                {% if rfi.resident_engineer_response %}
+                                <span class="badge badge-responded ms-2">Responded</span>
+                                {% else %}
+                                <span class="badge badge-pending ms-2">Pending</span>
+                                {% endif %}
+                            </h6>
+                            {% if rfi.resident_engineer_name %}
+                            <p class="mb-1"><strong>Name:</strong> {{ rfi.resident_engineer_name }}</p>
+                            {% endif %}
+                            {% if rfi.resident_engineer_response %}
+                            <p class="mb-1"><strong>Response:</strong></p>
+                            <div class="bg-white p-2 rounded">{{ rfi.resident_engineer_response }}</div>
+                            {% if rfi.resident_engineer_attachment %}
+                            <a class="btn btn-outline-primary btn-sm mt-2" href="{% url 'serve_rfi_shared_attachment' rfi.share_token %}?role=resident_engineer" download>
+                                <i class="bi bi-paperclip"></i> Download Attachment
+                            </a>
+                            {% endif %}
+                            <small class="text-muted">Responded: {{ rfi.resident_engineer_responded_at|date:"M d, Y g:i A" }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Response Form -->
+        <div class="response-form">
+            <h5 class="mb-3"><i class="bi bi-pencil-square"></i> Submit Your Inspection Response</h5>
+            <p class="text-muted mb-4">Fill in the form below to submit your inspection findings and comments.</p>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.inspector_role.id_for_label }}" class="form-label fw-bold">{{ form.inspector_role.label }}</label>
+                    {{ form.inspector_role }}
+                    {% if form.inspector_role.errors %}
+                    <div class="text-danger">{{ form.inspector_role.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.inspector_name.id_for_label }}" class="form-label fw-bold">{{ form.inspector_name.label }}</label>
+                    {{ form.inspector_name }}
+                    {% if form.inspector_name.errors %}
+                    <div class="text-danger">{{ form.inspector_name.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.inspector_signature.id_for_label }}" class="form-label fw-bold">{{ form.inspector_signature.label }}</label>
+                    {{ form.inspector_signature }}
+                    {% if form.inspector_signature.errors %}
+                    <div class="text-danger">{{ form.inspector_signature.errors|first }}</div>
+                    {% endif %}
+                    <div class="form-text">Type your full name as a digital signature</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.response.id_for_label }}" class="form-label fw-bold">{{ form.response.label }}</label>
+                    {{ form.response }}
+                    {% if form.response.errors %}
+                    <div class="text-danger">{{ form.response.errors|first }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="{{ form.attachment.id_for_label }}" class="form-label fw-bold">{{ form.attachment.label }}</label>
+                    {{ form.attachment }}
+                    {% if form.attachment.errors %}
+                    <div class="text-danger">{{ form.attachment.errors|first }}</div>
+                    {% endif %}
+                    <div class="form-text">You can attach photos, test results, or other relevant documents</div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" name="submit_response" class="btn btn-primary btn-lg">
+                        <i class="bi bi-send"></i> Submit Response
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-4 text-muted">
+            <small>
+                <i class="bi bi-shield-check"></i> Secure RFI Access | Site Tracking System<br>
+                This is a password-protected document. Do not share this link.
+            </small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

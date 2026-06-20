@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Daily Site Report - {{ report.project.title }} - {{ report.date }}</title>
+    <style type="text/css">
+        @page {
+            size: a4 portrait;
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.5;
+        }
+        .report-header {
+            background-color: #4a90e2;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .report-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .report-header .subtitle {
+            font-size: 16px;
+        }
+        .report-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+        h2 {
+            color: #4a90e2;
+            font-size: 18px;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        h3 {
+            font-size: 16px;
+            margin: 15px 0 10px 0;
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 8px;
+            vertical-align: top;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-pending {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .status-approved {
+            background-color: #28a745;
+            color: white;
+        }
+        .status-rejected {
+            background-color: #dc3545;
+            color: white;
+        }
+        .row {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .col {
+            width: 45%;
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 5%;
+        }
+        .info-item {
+            margin-bottom: 8px;
+        }
+        .info-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 120px;
+        }
+        .progress-text {
+            font-size: 12px;
+            text-align: center;
+        }
+        .image-row {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .image-container {
+            width: 30%;
+            margin-right: 3%;
+            display: inline-block;
+            vertical-align: top;
+            margin-bottom: 15px;
+        }
+        .image-container img {
+            max-width: 100%;
+            border: 1px solid #ddd;
+        }
+        .image-caption {
+            font-size: 12px;
+            margin-top: 4px;
+            text-align: center;
+        }
+        .page-break {
+            page-break-before: always;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h1>Daily Site Report</h1>
+        <div class="subtitle">{{ report.project.title }} - {{ report.date }}</div>
+    </div>
+    
+    <div class="report-section">
+        <h2>Report Overview</h2>
+        <div class="row">
+            <div class="col">
+                <div class="info-item">
+                    <span class="info-label">Project:</span>
+                    <span>{{ report.project.title }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Date:</span>
+                    <span>{{ report.date }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Site Engineer:</span>
+                    <span>{{ report.site_engineer.display_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Weather:</span>
+                    <span>{{ report.weather_condition }}</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="info-item">
+                    <span class="info-label">Status:</span>
+                    <span class="status-badge status-{{ report.status }}">{{ report.get_status_display }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Created:</span>
+                    <span>{{ report.created_at|date:"F d, Y g:i A" }}</span>
+                </div>
+                {% if report.approved_by %}
+                <div class="info-item">
+                    <span class="info-label">Approved By:</span>
+                    <span>{{ report.approved_by.display_name }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Approved At:</span>
+                    <span>{{ report.approved_at|date:"F d, Y g:i A" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="report-section">
+        <h2>Work Description</h2>
+        <p>{{ report.work_description|linebreaks }}</p>
+    </div>
+    
+    {% if activity_works or independent_activities %}
+    <div class="report-section">
+        <h2>Activities Progress</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Activity Name</th>
+                    <th>Progress</th>
+                    <th>Completion %</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for work in activity_works %}
+                <tr>
+                    <td>{{ work.activity.name }}</td>
+                    <td>
+                        {% if work.activity.total_quantity %}
+                            {{ work.activity.total_quantity_completed }}/{{ work.activity.total_quantity }} {{ work.activity.get_unit_display }}
+                            <br><small>Today: +{{ work.quantity }} {{ work.activity.get_unit_display }}</small>
+                        {% else %}
+                            {{ work.quantity }} {{ work.activity.get_unit_display }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% with progress=work.activity.progress_percentage|default:0 %}
+                        <div class="progress-text">{{ progress }}%</div>
+                        {% endwith %}
+                    </td>
+                    <td>{{ work.description|default:"No remarks" }}</td>
+                </tr>
+                {% endfor %}
+                {% for ind_activity in independent_activities %}
+                <tr>
+                    <td>{{ ind_activity.name }}</td>
+                    <td>
+                        {{ ind_activity.quantity }} 
+                        {% if ind_activity.unit == 'sqft' %}Square Feet
+                        {% elif ind_activity.unit == 'sqm' %}Square Meters
+                        {% elif ind_activity.unit == 'cuft' %}Cubic Feet
+                        {% elif ind_activity.unit == 'cum' %}Cubic Meters
+                        {% elif ind_activity.unit == 'lnft' %}Linear Feet
+                        {% elif ind_activity.unit == 'lnm' %}Linear Meters
+                        {% elif ind_activity.unit == 'pcs' %}Pieces
+                        {% elif ind_activity.unit == 'kg' %}Kilogram
+                        {% elif ind_activity.unit == 'ton' %}Ton
+                        {% elif ind_activity.unit == 'ltr' %}Liter
+                        {% elif ind_activity.unit == 'bags' %}Bags
+                        {% elif ind_activity.unit == 'hours' %}Hours
+                        {% elif ind_activity.unit == 'days' %}Days
+                        {% else %}{{ ind_activity.unit }}{% endif %}
+                    </td>
+                    <td>N/A</td>
+                    <td>{{ ind_activity.description|default:"No remarks" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if labor_details %}
+    <div class="report-section">
+        <h2>Labor Details</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Count</th>
+                    <th>Working Hours</th>
+                    <th>Hourly Rate</th>
+                    <th>Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for labor in labor_details %}
+                <tr>
+                    <td>{{ labor.get_category_display }}</td>
+                    <td>{{ labor.count }}</td>
+                    <td>{{ labor.working_hours }}</td>
+                    <td>{{ labor.hourly_rate|default:"N/A" }}</td>
+                    <td>{{ labor.total_cost|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if material_usage %}
+    <div class="report-section">
+        <h2>Material Usage</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Material</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Supplier</th>
+                    <th>Unit Cost</th>
+                    <th>Total Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for material in material_usage %}
+                <tr>
+                    <td>{{ material.material_name }}</td>
+                    <td>{{ material.quantity }}</td>
+                    <td>{{ material.get_unit_display }}</td>
+                    <td>{{ material.supplier|default:"N/A" }}</td>
+                    <td>{{ material.unit_cost|default:"N/A" }}</td>
+                    <td>{{ material.total_cost|default:"N/A" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+    
+    {% if photos %}
+    <div class="page-break"></div>
+    <div class="report-section">
+        <h2>Site Photos</h2>
+        <div class="image-row">
+            {% for photo in photos %}
+            <div class="image-container">
+                <img src="{{ photo.image.url }}" alt="Site photo">
+                {% if photo.caption %}
+                <div class="image-caption">{{ photo.caption }}</div>
+                {% endif %}
+            </div>
+            {% if forloop.counter|divisibleby:3 and not forloop.last %}
+        </div>
+        <div class="image-row">
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="report-section">
+        <h2>Issues & Challenges</h2>
+        <p>{{ report.issues_challenges|linebreaks|default:"No issues or challenges reported." }}</p>
+    </div>
+    
+    {% if report.next_day_plan %}
+    <div class="report-section">
+        <h2>Next Day Plan</h2>
+        <p>{{ report.next_day_plan|linebreaks }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="footer">
+        <p>Generated on {{ report.created_at|date:"F d, Y g:i A" }}</p>
+        <p>This is a system-generated report from the Site Tracking System</p>
+    </div>
+</body>
+</html>

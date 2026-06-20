@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}RFI List - Site Tracking System{% endblock %}
+
+{% block content %}
+<div class="container-fluid sts-page py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center sts-page-header">
+                <div>
+                    <h2 class="mb-1"><i class="bi bi-clipboard-check me-2"></i>Request for Inspection (RFI)</h2>
+                    <p class="text-muted mb-0">Manage inspection and approval requests</p>
+                </div>
+                {% if user.role == 'site_engineer' or user.role == 'admin' %}
+                <a href="{% url 'rfi_create' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Create New RFI
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <h3 class="mb-0 text-warning">{{ pending_count }}</h3>
+                    <p class="text-muted mb-0"><i class="bi bi-clock"></i> Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <h3 class="mb-0 text-success">{{ approved_count }}</h3>
+                    <p class="text-muted mb-0"><i class="bi bi-check-circle"></i> Approved</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h3 class="mb-0 text-danger">{{ disapproved_count }}</h3>
+                    <p class="text-muted mb-0"><i class="bi bi-x-circle"></i> Disapproved</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="search" class="form-label">Search</label>
+                    <input type="text" class="form-control" id="search" name="search" 
+                           placeholder="RFI number, project, or description..." 
+                           value="{{ search_query }}">
+                </div>
+                <div class="col-md-3">
+                    <label for="project" class="form-label">Project</label>
+                    <select class="form-select" id="project" name="project">
+                        <option value="">All Projects</option>
+                        {% for project in projects %}
+                        <option value="{{ project.id }}" {% if selected_project == project.id|stringformat:"s" %}selected{% endif %}>
+                            {{ project.title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select class="form-select" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="pending" {% if selected_status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="approved" {% if selected_status == 'approved' %}selected{% endif %}>Approved</option>
+                        <option value="not_approved" {% if selected_status == 'not_approved' %}selected{% endif %}>Disapproved</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2 w-100">
+                        <i class="bi bi-search"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- RFI List -->
+    <div class="card">
+        <div class="card-body">
+            {% if rfis %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle sts-stack-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>RFI Number</th>
+                            <th>Project</th>
+                            <th>Submission Date</th>
+                            <th>Submitted By</th>
+                            <th>Inspector Responses</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rfi in rfis %}
+                        <tr>
+                            <td data-label="RFI Number">
+                                <a href="{% url 'rfi_detail' rfi.id %}" class="text-decoration-none fw-semibold">
+                                    {{ rfi.rfi_number }}
+                                </a>
+                            </td>
+                            <td data-label="Project">
+                                <a href="{% url 'project_detail' rfi.project.id %}" class="text-decoration-none">
+                                    {{ rfi.project.title }}
+                                </a>
+                            </td>
+                            <td data-label="Submission Date">{{ rfi.submission_date|date:"M d, Y" }}<br><small class="text-muted">{{ rfi.submission_time|time:"g:i A" }}</small></td>
+                            <td data-label="Submitted By">{{ rfi.submitted_by_name }}</td>
+                            <td data-label="Responses">
+                                <small>
+                                    {{ rfi.inspector_response_count }} / {{ rfi.total_inspectors_required }} Responded
+                                </small>
+                            </td>
+                            <td data-label="Status">
+                                {% if rfi.approval_status == 'pending' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-clock"></i> Pending
+                                </span>
+                                {% elif rfi.approval_status == 'approved' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Approved
+                                </span>
+                                {% elif rfi.approval_status == 'not_approved' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Disapproved
+                                </span>
+                                <span class="status-badge status-rejected">
+                                    <i class="bi bi-x-circle"></i> Not Approved
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td data-label="Actions">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'rfi_detail' rfi.id %}" class="btn btn-outline-primary" title="View">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if user == rfi.submitted_by or user.role == 'admin' %}
+                                    <a href="{% url 'rfi_edit' rfi.id %}" class="btn btn-outline-secondary" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'rfi_delete' rfi.id %}" class="btn btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if rfis.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if rfis.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ rfis.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in rfis.paginator.page_range %}
+                    {% if rfis.number == num %}
+                    <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                    {% elif num > rfis.number|add:'-3' and num < rfis.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if rfis.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ rfis.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_project %}&project={{ selected_project }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-clipboard-check" style="font-size: 4rem; color: var(--text-secondary);"></i>
+                <h4 class="mt-3">No RFIs Found</h4>
+                <p class="text-muted">{% if user.role == 'site_engineer' or user.role == 'admin' %}Create your first RFI to get started.{% else %}No RFIs available for your projects.{% endif %}</p>
+                {% if user.role == 'site_engineer' or user.role == 'admin' %}
+                <a href="{% url 'rfi_create' %}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle me-2"></i>Create New RFI
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

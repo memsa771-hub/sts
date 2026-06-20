@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Project - Activities - Site Tracking System{% endblock %}
+
+{% block page_title %}Select Project for Activities{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-selection-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 32px;
+    }
+    
+    .selection-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    
+    .selection-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+    
+    .selection-subtitle {
+        font-size: 16px;
+        color: var(--text-secondary);
+        margin-bottom: 0;
+    }
+    
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+    
+    .project-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        transition: all 0.2s;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .project-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border-color: var(--primary-color);
+        text-decoration: none;
+        color: inherit;
+    }
+    
+    .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+    
+    .project-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        line-height: 1.3;
+    }
+    
+    .project-status {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    
+    .project-status.in-progress {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    
+    .project-status.completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .project-details {
+        color: var(--text-secondary);
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+    
+    .project-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 15px;
+        border-top: 1px solid #e9ecef;
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    
+    .activities-button {
+        background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-top: 15px;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .activities-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(74, 144, 226, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        margin-bottom: 30px;
+        color: #dee2e6;
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        color: #495057;
+    }
+    
+    .empty-state p {
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+    
+    .btn-create-project {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 15px 30px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-create-project:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    @media (max-width: 768px) {
+        .projects-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .project-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .project-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-selection-container">
+    <div class="selection-header">
+        <h1 class="selection-title">Select Project</h1>
+        <p class="selection-subtitle">Choose a project to manage its activities</p>
+    </div>
+    
+    {% if projects %}
+        <div class="projects-grid">
+            {% for project in projects %}
+            <div class="project-card" onclick="window.location.href='{% url 'activities_list' project.id %}'">
+                <div class="project-header">
+                    <div>
+                        <h3 class="project-title">{{ project.title }}</h3>
+                    </div>
+                    <span class="project-status {% if project.status == 'completed' %}completed{% elif project.status == 'in_progress' %}in-progress{% endif %}">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="project-details">
+                    {% if project.description %}
+                        <p>{{ project.description|truncatewords:15 }}</p>
+                    {% endif %}
+                    <div><strong>Location:</strong> {{ project.location|default:"Not specified" }}</div>
+                </div>
+                
+                <button type="button" class="activities-button">
+                    <i class="bi bi-list-ul"></i> Manage Activities
+                </button>
+                
+                <div class="project-meta">
+                    <span>Created: {{ project.created_at|date:"M d, Y" }}</span>
+                    <span>By: {% if project.created_by %}{{ project.created_by.display_name }}{% else %}Unknown{% endif %}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-folder-x"></i>
+            <h3>No Projects Found</h3>
+            <p>You don't have access to any projects yet.</p>
+            <a href="{% url 'create_project' %}" class="btn-create-project">
+                <i class="bi bi-plus-circle"></i> Create New Project
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

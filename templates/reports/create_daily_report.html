@@ -1,0 +1,983 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Daily Report - {{ project.title }}{% endblock %}
+{% block page_title %}Daily Site Report{% endblock %}
+
+{% block extra_css %}
+<style>
+    .report-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 32px;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+        padding: 32px;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .page-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0 0 4px 0;
+    }
+    
+    .page-header .subtitle {
+        color: var(--text-secondary);
+        font-size: 14px;
+        margin: 0;
+    }
+    
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .section-title i {
+        color: var(--primary-color);
+    }
+    
+    .form-group-custom {
+        margin-bottom: 20px;
+    }
+    
+    .form-group-custom label {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .form-help-text {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    /* Activities Table Styles */
+    .table-container {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+        background: white;
+    }
+    
+    .activities-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+    }
+    
+    .activities-table thead th {
+        background: #5b8fd8;
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        padding: 14px 12px;
+        border: none;
+        font-size: 14px;
+    }
+    
+    .activities-table tbody td {
+        padding: 16px 12px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+        background: white;
+    }
+    
+    .activities-table tbody tr:hover {
+        background: var(--bg-light);
+        transition: background-color 0.2s ease;
+    }
+    
+    .activities-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    .activity-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        font-size: 14px;
+    }
+    
+    .progress-cell {
+        min-width: 220px;
+        padding: 14px 12px !important;
+    }
+    
+    .activity-progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .quantity-row {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .input-group-sm .form-control {
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        text-align: center;
+        transition: all 0.2s;
+        height: 32px;
+    }
+    
+    .input-group-sm .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.1);
+        outline: none;
+    }
+    
+    .completed-input {
+        background: #f0f9ff;
+    }
+    
+    .total-input {
+        background: var(--bg-light);
+    }
+    
+    .input-group-text.divider {
+        background: var(--primary-color);
+        color: white;
+        border: 1px solid var(--primary-color);
+        font-weight: 600;
+        font-size: 13px;
+        padding: 0 10px;
+    }
+    
+    .unit-text {
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-top: 4px;
+        display: block;
+        text-align: center;
+    }
+    
+    .progress-bar-container {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .progress {
+        border-radius: 8px;
+        background: #e5e7eb;
+        height: 24px;
+    }
+    
+    .progress-bar {
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.3s;
+    }
+    
+    .progress-text {
+        font-weight: 600;
+    }
+    
+    .progress-value {
+        font-weight: 600;
+        color: var(--text-primary);
+        min-width: 40px;
+        font-size: 13px;
+    }
+
+    .progress-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        max-width: 220px;
+        margin: 0 auto;
+    }
+
+    .progress-slider-wrap {
+        width: 100%;
+        max-width: 220px;
+        margin: 8px auto 4px;
+        padding: 10px 12px;
+        background: #f0f4ff;
+        border: 1px solid #c7d7f5;
+        border-radius: 10px;
+    }
+
+    .progress-slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #4a90e2;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+    }
+
+    .progress-slider {
+        width: 100%;
+        height: 14px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        background: #dde3ea;
+        border-radius: 999px;
+        outline: none;
+        display: block;
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+
+    .progress-slider::-webkit-slider-runnable-track {
+        height: 14px;
+        border-radius: 999px;
+        background: transparent;
+    }
+
+    .progress-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 28px;
+        height: 28px;
+        margin-top: -7px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #673de6 0%, #4a90e2 100%);
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(103, 61, 230, 0.45);
+        cursor: grab;
+    }
+
+    .progress-slider::-webkit-slider-thumb:active {
+        cursor: grabbing;
+        transform: scale(1.12);
+        box-shadow: 0 4px 12px rgba(103, 61, 230, 0.55);
+    }
+
+    .progress-slider::-moz-range-track {
+        height: 14px;
+        border-radius: 999px;
+        background: #dde3ea;
+        border: none;
+    }
+
+    .progress-slider::-moz-range-progress {
+        height: 14px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #673de6, #4a90e2);
+    }
+
+    .progress-slider::-moz-range-thumb {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #673de6 0%, #4a90e2 100%);
+        border: 3px solid #fff;
+        box-shadow: 0 2px 8px rgba(103, 61, 230, 0.45);
+        cursor: grab;
+    }
+
+    .progress-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .progress-slider-row .progress-slider {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .progress-slider-row .progress-value {
+        min-width: 44px;
+        text-align: center;
+        font-size: 13px;
+        font-weight: 800;
+        color: #673de6;
+        background: #fff;
+        border: 1px solid #c7d7f5;
+        border-radius: 6px;
+        padding: 2px 6px;
+    }
+    
+    .status-select {
+        min-width: 130px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        font-weight: 500;
+        background: white;
+        transition: all 0.2s;
+        padding: 6px 10px;
+    }
+    
+    .status-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.1);
+        outline: none;
+    }
+    
+    .remarks-input {
+        min-width: 180px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        font-size: 13px;
+        background: white;
+        transition: all 0.2s;
+        padding: 6px 10px;
+    }
+    
+    .remarks-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.1);
+        outline: none;
+    }
+    
+    .file-input {
+        font-size: 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: white;
+        transition: all 0.2s;
+        min-width: 150px;
+        padding: 5px 8px;
+    }
+    
+    .file-input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.1);
+        outline: none;
+    }
+    
+    /* Picture column specific styling */
+    .activities-table th:nth-child(5),
+    .activities-table td:nth-child(5) {
+        min-width: 170px;
+        width: 170px;
+    }
+    
+    /* Activity column */
+    .activities-table th:nth-child(1),
+    .activities-table td:nth-child(1) {
+        min-width: 120px;
+        width: 25%;
+    }
+    
+    /* Progress column */
+    .activities-table th:nth-child(2),
+    .activities-table td:nth-child(2) {
+        min-width: 260px;
+        width: 30%;
+    }
+    
+    /* Status column */
+    .activities-table th:nth-child(3),
+    .activities-table td:nth-child(3) {
+        min-width: 130px;
+        width: 15%;
+    }
+    
+    /* Remarks column */
+    .activities-table th:nth-child(4),
+    .activities-table td:nth-child(4) {
+        min-width: 180px;
+        width: 25%;
+    }
+    
+    /* Quantity Input Styles - Removed old styles, replaced with new design above */
+    
+    .alert-info-custom {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .alert-info-custom h6 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+    
+    .recent-report-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 16px;
+        }
+        
+        .content-card {
+            padding: 20px;
+        }
+        
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .activity-progress-container {
+            gap: 8px;
+        }
+        
+        .progress-cell {
+            min-width: 0 !important;
+        }
+        
+        .quantity-row, .progress-bar-container, .progress-slider-row {
+            max-width: 100% !important;
+        }
+        
+        .file-input {
+            min-width: 0 !important;
+            width: 100%;
+            font-size: 12px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="content-card">
+        <div class="page-header">
+            <div>
+                <h2>Create Daily Site Report</h2>
+                <p class="subtitle">Document daily project progress</p>
+            </div>
+            <a href="{% url 'projects_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Projects
+            </a>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            <!-- Project Information Section -->
+            <h5 class="section-title">
+                <i class="bi bi-info-circle"></i> Project Information
+            </h5>
+            
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label>Project Title</label>
+                        <input type="text" class="form-control" value="{{ project.title }}" readonly>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label for="{{ form.date.id_for_label }}">Date *</label>
+                        {{ form.date }}
+                        <div class="form-help-text">
+                            <i class="bi bi-info-circle"></i>
+                            One report per day per project
+                        </div>
+                        {% if form.date.errors %}
+                            <div class="text-danger small mt-1">{{ form.date.errors.0 }}</div>
+                        {% endif %}
+                        {% if date_collision %}
+                            <div class="alert alert-danger mt-2">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                A report for this project already exists on this date.
+                                Please choose a different date or 
+                                <a href="{% url 'view_daily_report' report_id=existing_report.id %}" class="alert-link">
+                                    view/edit the existing report
+                                </a>.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group-custom">
+                        <label for="{{ form.weather.id_for_label }}">Weather</label>
+                        {{ form.weather }}
+                        {% if form.weather.errors %}
+                            <div class="text-danger small mt-1">{{ form.weather.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports Section -->
+            {% if recent_reports %}
+            <div class="alert-info-custom">
+                <h6>
+                    <i class="bi bi-calendar-check" style="color: var(--primary-color);"></i>
+                    Recent Reports for {{ project.title }}
+                </h6>
+                <div class="form-help-text mb-3">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Important:</strong> Each project can have only <strong>one report per day</strong>. 
+                    If a report already exists for a date, please choose a different date or edit the existing report.
+                </div>
+                
+                <div class="row g-2">
+                    {% for report in recent_reports|slice:":5" %}
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="recent-report-card">
+                            <div class="small fw-bold" style="color: var(--primary-color);">{{ report.date|date:"M d" }}</div>
+                            <div class="small text-muted">{{ report.date|date:"Y" }}</div>
+                            <span class="badge badge-sm 
+                                {% if report.status == 'approved' %}bg-success
+                                {% elif report.status == 'rejected' %}bg-danger
+                                {% else %}bg-warning text-dark
+                                {% endif %}">
+                                {{ report.get_status_display }}
+                            </span>
+                            <div class="mt-2">
+                                <a href="{% url 'view_daily_report' report.id %}" class="btn btn-sm btn-outline-primary" style="font-size: 11px; padding: 4px 12px;">
+                                    View
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if recent_reports|length > 5 %}
+                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
+                        <div class="recent-report-card d-flex align-items-center justify-content-center" style="min-height: 120px;">
+                            <a href="{% url 'daily_reports_list' %}?project={{ project.id }}" class="text-decoration-none" style="color: var(--primary-color);">
+                                <i class="bi bi-three-dots"></i><br>
+                                <small>View All</small>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Activities Table Section -->
+            <h5 class="section-title">
+                <i class="bi bi-list-task"></i> Activities
+            </h5>
+            
+            <div class="table-responsive table-container">
+                <table class="activities-table sts-mobile-stack">
+                    <thead>
+                        <tr>
+                            <th class="text-center">Activity</th>
+                            <th class="text-center">Progress</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Remarks</th>
+                            <th class="text-center">Picture</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                                        {% if selected_activities %}
+                                            {% for item in selected_activities %}
+                                            <tr>
+                                                <td class="activity-name" data-label="Activity">{{ item.activity.name }}</td>
+                                                <td class="text-center progress-cell" data-label="Progress">
+                                                    <div class="activity-progress-container">
+                                                        <!-- Quantity Inputs Row -->
+                                                        <div class="quantity-row">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" 
+                                                                       class="form-control completed-input" 
+                                                                       name="activity_completed_{{ item.activity.id }}"
+                                                                       id="completed-{{ item.activity.id }}"
+                                                                       placeholder="0"
+                                                                       min="0"
+                                                                       step="0.01"
+                                                                       value="0"
+                                                                       onchange="updateProgressFromQuantity('{{ item.activity.id }}')">
+                                                                <span class="input-group-text divider">/</span>
+                                                                <input type="number" 
+                                                                       class="form-control total-input" 
+                                                                       name="activity_total_{{ item.activity.id }}"
+                                                                       id="total-{{ item.activity.id }}"
+                                                                       placeholder="Total"
+                                                                       min="0"
+                                                                       step="0.01"
+                                                                       value="{{ item.total_quantity|default:100 }}"
+                                                                       onchange="updateProgressFromQuantity('{{ item.activity.id }}')">
+                                                            </div>
+                                                            <small class="unit-text">{{ item.unit_display|default:"units" }}</small>
+                                                        </div>
+                                                        
+                                                        <!-- Progress Slider (drag cursor) -->
+                                                        <div class="progress-slider-wrap">
+                                                            <div class="progress-slider-label">
+                                                                <span><i class="bi bi-sliders"></i> Drag Progress</span>
+                                                                <span class="progress-value" id="slider-text-{{ item.activity.id }}">0%</span>
+                                                            </div>
+                                                            <input type="range"
+                                                                   class="progress-slider"
+                                                                   id="progress-slider-{{ item.activity.id }}"
+                                                                   min="0" max="100" step="1" value="0"
+                                                                   aria-label="Activity progress slider"
+                                                                   oninput="updateProgressFromSlider('{{ item.activity.id }}')"
+                                                                   onchange="updateProgressFromSlider('{{ item.activity.id }}')">
+                                                        </div>
+
+                                                        <!-- Progress Bar -->
+                                                        <div class="progress-bar-container">
+                                                            <div class="progress" style="height: 25px;">
+                                                                <div class="progress-bar progress-bar-animated" 
+                                                                     id="progress-bar-{{ item.activity.id }}"
+                                                                     role="progressbar" 
+                                                                     style="width: 0%; background: linear-gradient(90deg, #6c757d 0%, #adb5bd 100%);" 
+                                                                     aria-valuenow="0" 
+                                                                     aria-valuemin="0" 
+                                                                     aria-valuemax="100">
+                                                                    <span class="progress-text" id="progress-text-{{ item.activity.id }}">0%</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- Hidden field for form submission -->
+                                                    <input type="hidden" name="activity_progress_{{ item.activity.id }}" id="progress-{{ item.activity.id }}" value="0">
+                                                </td>
+                                                <td class="text-center" data-label="Status">
+                                                    <select class="form-select status-select" name="activity_status_{{ item.activity.id }}">
+                                                        <option value="in_progress" selected>In Progress</option>
+                                                        <option value="completed">Completed</option>
+                                                        <option value="on_hold">On Hold</option>
+                                                        <option value="not_started">Not Started</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-center" data-label="Remarks">
+                                                    <input type="text" 
+                                                           class="form-control remarks-input" 
+                                                           name="activity_remarks_{{ item.activity.id }}"
+                                                           placeholder="Remarks..." />
+                                                </td>
+                                                <td class="text-center" data-label="Picture">
+                                                    <input type="file" 
+                                                           class="form-control file-input" 
+                                                           name="activity_picture_{{ item.activity.id }}"
+                                                           accept="image/*">
+                                                </td>
+                                            </tr>
+                                            <!-- Hidden fields for quantity calculation -->
+                                            <input type="hidden" name="activity_quantity_{{ item.activity.id }}" id="quantity-{{ item.activity.id }}" value="0">
+                                            <input type="hidden" name="activity_total_{{ item.activity.id }}" value="{{ item.total_quantity }}">
+                                            {% endfor %}
+                                        {% else %}
+                                            <!-- Default activities if none selected -->
+                                            <tr>
+                                                <td class="activity-name">Steel Work</td>
+                                                <td class="text-center">
+                                                    <div class="progress-container">
+                                                        <input type="range" 
+                                                               class="progress-slider form-range" 
+                                                               min="0" max="100" 
+                                                               value="60"
+                                                               id="progress-0"
+                                                               onchange="updateProgress(this, 0)">
+                                                        <span class="progress-value" id="progress-text-0">60%</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <select class="form-select status-select">
+                                                        <option value="in_progress" selected>In Progress</option>
+                                                        <option value="completed">Completed</option>
+                                                        <option value="on_hold">On Hold</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="text" class="form-control remarks-input" placeholder="every thing was okay" />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="file" class="form-control file-input" accept="image/*">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="activity-name">Concrete Work</td>
+                                                <td class="text-center">
+                                                    <div class="progress-container">
+                                                        <input type="range" 
+                                                               class="progress-slider form-range" 
+                                                               min="0" max="100" 
+                                                               value="40"
+                                                               id="progress-1"
+                                                               onchange="updateProgress(this, 1)">
+                                                        <span class="progress-value" id="progress-text-1">40%</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <select class="form-select status-select">
+                                                        <option value="in_progress" selected>In Progress</option>
+                                                        <option value="completed">Completed</option>
+                                                        <option value="on_hold">On Hold</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="text" class="form-control remarks-input" placeholder="Remarks..." />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="file" class="form-control file-input" accept="image/*">
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="activity-name">Loading/Unloading</td>
+                                                <td class="text-center">
+                                                    <div class="progress-container">
+                                                        <input type="range" 
+                                                               class="progress-slider form-range" 
+                                                               min="0" max="100" 
+                                                               value="75"
+                                                               id="progress-2"
+                                                               onchange="updateProgress(this, 2)">
+                                                        <span class="progress-value" id="progress-text-2">75%</span>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <select class="form-select status-select">
+                                                        <option value="in_progress" selected>In Progress</option>
+                                                        <option value="completed">Completed</option>
+                                                        <option value="on_hold">On Hold</option>
+                                                    </select>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="text" class="form-control remarks-input" placeholder="Remarks..." />
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="file" class="form-control file-input" accept="image/*">
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+            <!-- Hidden form fields for work description and issues -->
+            <div style="display: none;">
+                {{ form.work_description }}
+                {{ form.issues_remarks }}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons form-actions" style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border-color); justify-content: flex-end;">
+                <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" name="submit_report" value="1">
+                    <i class="bi bi-check-circle"></i> Create Report
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function getActivityIdFromSlider(slider) {
+    if (slider.id.startsWith('progress-slider-')) {
+        return slider.id.replace('progress-slider-', '');
+    }
+    return slider.id.replace('progress-', '');
+}
+
+function paintSliderTrack(slider, percentage) {
+    if (!slider) return;
+    const pct = Math.max(0, Math.min(100, percentage));
+    slider.style.background = `linear-gradient(to right, #673de6 0%, #4a90e2 ${pct}%, #dde3ea ${pct}%, #dde3ea 100%)`;
+}
+
+function updateProgress(slider, activityId) {
+    const value = slider.value;
+    const progressText = document.getElementById(`progress-text-${activityId}`);
+    const sliderText = document.getElementById(`slider-text-${activityId}`);
+    const quantityField = document.getElementById(`quantity-${activityId}`);
+    const totalField = document.querySelector(`input[name="activity_total_${activityId}"]`);
+    
+    if (progressText) {
+        progressText.textContent = value + '%';
+    }
+    if (sliderText) {
+        sliderText.textContent = value + '%';
+    }
+    
+    if (quantityField && totalField) {
+        const totalQuantity = parseFloat(totalField.value) || 0;
+        const calculatedQuantity = (totalQuantity * value) / 100;
+        quantityField.value = calculatedQuantity.toFixed(3);
+    }
+    
+    paintSliderTrack(slider, value);
+}
+
+function updateProgressFromSlider(activityId) {
+    const slider = document.getElementById(`progress-slider-${activityId}`);
+    const completedField = document.getElementById(`completed-${activityId}`);
+    const totalField = document.getElementById(`total-${activityId}`);
+
+    if (!slider || !completedField || !totalField) {
+        return;
+    }
+
+    const total = parseFloat(totalField.value) || 0;
+    const percentage = parseFloat(slider.value) || 0;
+    const completed = total > 0 ? (total * percentage) / 100 : 0;
+
+    completedField.value = completed % 1 === 0 ? completed : completed.toFixed(2);
+    updateProgressFromQuantity(activityId);
+}
+
+function updateProgressFromQuantity(activityId) {
+    const completedField = document.getElementById(`completed-${activityId}`);
+    const totalField = document.getElementById(`total-${activityId}`);
+    const progressBar = document.getElementById(`progress-bar-${activityId}`);
+    const progressText = document.getElementById(`progress-text-${activityId}`);
+    const progressHidden = document.getElementById(`progress-${activityId}`);
+    const slider = document.getElementById(`progress-slider-${activityId}`);
+    const sliderText = document.getElementById(`slider-text-${activityId}`);
+    
+    if (completedField && totalField && progressBar && progressText) {
+        const completed = parseFloat(completedField.value) || 0;
+        const total = parseFloat(totalField.value) || 0;
+        
+        let percentage = 0;
+        if (total > 0) {
+            percentage = Math.min((completed / total) * 100, 100);
+        }
+        
+        // Update progress bar
+        progressBar.style.width = percentage + '%';
+        progressBar.setAttribute('aria-valuenow', percentage);
+        progressText.textContent = Math.round(percentage) + '%';
+
+        // Sync slider
+        if (slider) {
+            slider.value = Math.round(percentage);
+            paintSliderTrack(slider, percentage);
+        }
+        if (sliderText) {
+            sliderText.textContent = Math.round(percentage) + '%';
+        }
+        
+        // Update hidden field for form submission
+        if (progressHidden) {
+            progressHidden.value = Math.round(percentage);
+        }
+        
+        // Update progress bar color
+        let backgroundColor = '';
+        if (percentage >= 100) {
+            backgroundColor = '#10b981'; // Green
+        } else if (percentage >= 75) {
+            backgroundColor = '#3b82f6'; // Blue
+        } else if (percentage >= 50) {
+            backgroundColor = '#f59e0b'; // Orange
+        } else if (percentage > 0) {
+            backgroundColor = '#ef4444'; // Red
+        } else {
+            backgroundColor = '#9ca3af'; // Gray
+        }
+        
+        progressBar.style.background = backgroundColor;
+        
+        // Add pulsing animation for 100% completion
+        if (percentage >= 100) {
+            progressBar.style.animation = 'pulse 1.5s ease-in-out infinite alternate';
+        } else {
+            progressBar.style.animation = 'none';
+        }
+    }
+}
+
+// Initialize all sliders on page load
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.progress-slider').forEach((slider) => {
+        const activityId = getActivityIdFromSlider(slider);
+        if (slider.id.startsWith('progress-slider-')) {
+            updateProgressFromQuantity(activityId);
+        } else {
+            updateProgress(slider, activityId);
+        }
+    });
+    
+    // Update work description based on activities
+    updateWorkDescription();
+});
+
+function updateWorkDescription() {
+    const activities = [];
+    const rows = document.querySelectorAll('.activities-table tbody tr');
+    
+    rows.forEach(row => {
+        const activityName = row.querySelector('.activity-name').textContent;
+        const progressEl = row.querySelector('.progress-value') || row.querySelector('.progress-text');
+        const progress = progressEl ? progressEl.textContent : '0%';
+        const status = row.querySelector('.status-select').value;
+        const remarks = row.querySelector('.remarks-input').value;
+        
+        let description = `${activityName}: ${progress} - ${status}`;
+        if (remarks) {
+            description += ` (${remarks})`;
+        }
+        activities.push(description);
+    });
+    
+    // If work description field exists, update it
+    const workDescField = document.querySelector('textarea[name="work_description"]');
+    if (workDescField) {
+        workDescField.value = `Daily Activities Report:\n\n${activities.join('\n')}`;
+    }
+}
+
+// Update work description when form is submitted
+document.querySelector('form').addEventListener('submit', function(e) {
+    updateWorkDescription();
+});
+
+// File upload feedback
+document.querySelectorAll('.file-input').forEach(input => {
+    input.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            this.style.borderColor = '#28a745';
+            this.style.backgroundColor = '#f8fff9';
+        } else {
+            this.style.borderColor = '#dee2e6';
+            this.style.backgroundColor = 'white';
+        }
+    });
+});
+</script>
+{% endblock %}

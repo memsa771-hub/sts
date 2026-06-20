@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Team Member - Site Tracking System{% endblock %}
+{% block page_title %}Add Team Member{% endblock %}
+
+{% block content %}
+<style>
+    .team-form-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        padding: 40px;
+        border: 1px solid #e8ecf1;
+    }
+    
+    .form-header {
+        text-align: center;
+        margin-bottom: 35px;
+        padding-bottom: 25px;
+        border-bottom: 2px solid #f0f3f7;
+    }
+    
+    .form-header-icon {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .form-header-icon i {
+        font-size: 32px;
+        color: white;
+    }
+    
+    .form-header h4 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+    
+    .form-header p {
+        color: #718096;
+        font-size: 15px;
+        margin: 0;
+    }
+    
+    .form-floating {
+        margin-bottom: 24px;
+    }
+    
+    .form-floating > .form-control {
+        height: 58px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        padding: 1rem 1rem;
+    }
+    
+    .form-floating > .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-floating > label {
+        color: #718096;
+        font-weight: 500;
+        font-size: 14px;
+        padding: 1rem 1rem;
+    }
+    
+    .form-check-wrapper {
+        background: #f7fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .form-check-wrapper:hover {
+        background: #edf2f7;
+        border-color: #cbd5e0;
+    }
+    
+    .form-check-input {
+        width: 22px;
+        height: 22px;
+        margin-top: 0;
+        cursor: pointer;
+        border: 2px solid #cbd5e0;
+    }
+    
+    .form-check-input:checked {
+        background-color: #48bb78;
+        border-color: #48bb78;
+    }
+    
+    .form-check-label {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2d3748;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+    
+    .form-text {
+        font-size: 13px;
+        color: #a0aec0;
+        margin-top: 6px;
+        display: block;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 35px;
+        padding-top: 25px;
+        border-top: 2px solid #f0f3f7;
+    }
+    
+    .btn-save {
+        flex: 1;
+        height: 52px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+    }
+    
+    .btn-cancel {
+        flex: 0.4;
+        height: 52px;
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        color: #4a5568;
+        font-weight: 600;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+        color: #2d3748;
+    }
+    
+    .invalid-feedback {
+        display: block;
+        color: #e53e3e;
+        font-size: 13px;
+        margin-top: 6px;
+        font-weight: 500;
+    }
+    
+    .alert {
+        border-radius: 12px;
+        border: none;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        font-size: 14px;
+    }
+    
+    .alert-danger {
+        background: #fff5f5;
+        color: #c53030;
+        border-left: 4px solid #e53e3e;
+    }
+    
+    @media (max-width: 576px) {
+        .form-card {
+            padding: 30px 20px;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .btn-cancel {
+            flex: 1;
+        }
+    }
+</style>
+
+<div class="team-form-container">
+    <div class="form-card">
+        <!-- Form Header -->
+        <div class="form-header">
+            <div class="form-header-icon">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <h4>Add New Team Member</h4>
+            <p>Fill in the details to add a new team member</p>
+        </div>
+        
+        <!-- Form -->
+        <form method="post" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+            
+            <!-- First Name -->
+            <div class="form-floating">
+                {{ form.first_name }}
+                <label for="{{ form.first_name.id_for_label }}">
+                    <i class="bi bi-person me-2"></i>First Name <span class="text-danger">*</span>
+                </label>
+                {% if form.first_name.errors %}
+                    <div class="invalid-feedback">{{ form.first_name.errors|first }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Role -->
+            <div class="form-floating">
+                {{ form.role }}
+                <label for="{{ form.role.id_for_label }}">
+                    <i class="bi bi-briefcase me-2"></i>Job Role/Designation <span class="text-danger">*</span>
+                </label>
+                {% if form.role.errors %}
+                    <div class="invalid-feedback">{{ form.role.errors|first }}</div>
+                {% else %}
+                    <small class="form-text">e.g., Site Supervisor, Electrician, Mason, etc.</small>
+                {% endif %}
+            </div>
+            
+            <!-- Project Assignment -->
+            <div class="form-floating">
+                {{ form.project }}
+                <label for="{{ form.project.id_for_label }}">
+                    <i class="bi bi-folder me-2"></i>Assign Project
+                </label>
+                {% if form.project.errors %}
+                    <div class="invalid-feedback">{{ form.project.errors|first }}</div>
+                {% else %}
+                    <small class="form-text">Optional - Assign team member to a project</small>
+                {% endif %}
+            </div>
+            
+            <!-- CNIC -->
+            <div class="form-floating">
+                {{ form.cnic }}
+                <label for="{{ form.cnic.id_for_label }}">
+                    <i class="bi bi-card-text me-2"></i>CNIC Number <span class="text-danger">*</span>
+                </label>
+                {% if form.cnic.errors %}
+                    <div class="invalid-feedback">{{ form.cnic.errors|first }}</div>
+                {% else %}
+                    <small class="form-text">Format: 12345-1234567-1</small>
+                {% endif %}
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="form-floating">
+                {{ form.contact_info }}
+                <label for="{{ form.contact_info.id_for_label }}">
+                    <i class="bi bi-telephone me-2"></i>Contact Number <span class="text-danger">*</span>
+                </label>
+                {% if form.contact_info.errors %}
+                    <div class="invalid-feedback">{{ form.contact_info.errors|first }}</div>
+                {% else %}
+                    <small class="form-text">Mobile or phone number</small>
+                {% endif %}
+            </div>
+
+            <!-- Address -->
+            <div class="mb-3">
+                <label for="{{ form.address.id_for_label }}" class="form-label">
+                    <i class="bi bi-geo-alt me-2"></i>Address
+                </label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <div class="invalid-feedback d-block">{{ form.address.errors|first }}</div>
+                {% else %}
+                    <small class="form-text">Current residential address</small>
+                {% endif %}
+            </div>
+            
+            <!-- Joined Date -->
+            <div class="form-floating">
+                {{ form.joined_date }}
+                <label for="{{ form.joined_date.id_for_label }}">
+                    <i class="bi bi-calendar-event me-2"></i>Joining Date <span class="text-danger">*</span>
+                </label>
+                {% if form.joined_date.errors %}
+                    <div class="invalid-feedback">{{ form.joined_date.errors|first }}</div>
+                {% endif %}
+            </div>
+            
+            <!-- Active Status -->
+            <div class="form-check-wrapper">
+                <div class="form-check d-flex align-items-center">
+                    {{ form.is_active }}
+                    <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                        <i class="bi bi-check-circle me-2"></i>Active Status
+                    </label>
+                </div>
+                <small class="form-text ms-4 ps-2">Check if the team member is currently active</small>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="bi bi-check-lg"></i>
+                    Save Team Member
+                </button>
+                <a href="{% url 'team_members_list' %}" class="btn btn-cancel">
+                    <i class="bi bi-x-lg"></i>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-format CNIC input
+document.addEventListener('DOMContentLoaded', function() {
+    const cnicInput = document.getElementById('{{ form.cnic.id_for_label }}');
+    if (cnicInput) {
+        cnicInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^\d]/g, '');
+            if (value.length > 5) {
+                value = value.slice(0, 5) + '-' + value.slice(5);
+            }
+            if (value.length > 13) {
+                value = value.slice(0, 13) + '-' + value.slice(13);
+            }
+            if (value.length > 15) {
+                value = value.slice(0, 15);
+            }
+            e.target.value = value;
+        });
+    }
+});
+</script>
+{% endblock %}

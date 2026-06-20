@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Site Report - {{ report.project.title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: white;
+        }
+        
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+        
+        @media print {
+            body { margin: 0; padding: 0; }
+            .no-print { display: none !important; }
+            .page-break { display: none; }
+            table { page-break-inside: avoid; }
+            .container { 
+                box-shadow: none;
+                padding: 10px;
+                page-break-after: avoid;
+            }
+            /* Ensure progress bars show in print */
+            .progress-bar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .progress-fill {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            /* Show photos in print - compact */
+            .photos-grid {
+                display: grid !important;
+                gap: 8px !important;
+                margin: 10px 0 !important;
+            }
+            .photo-item img {
+                height: 100px !important;
+            }
+            .section-title {
+                margin: 10px 0 8px 0 !important;
+                padding-bottom: 5px !important;
+                font-size: 16px !important;
+            }
+            .header {
+                margin-bottom: 10px !important;
+                padding-bottom: 10px !important;
+            }
+            .info-section {
+                margin-bottom: 10px !important;
+                padding: 10px !important;
+            }
+            table {
+                margin: 10px 0 !important;
+            }
+            th {
+                padding: 8px 6px !important;
+                font-size: 10px !important;
+            }
+            td {
+                padding: 6px 6px !important;
+                font-size: 11px !important;
+            }
+            .footer {
+                margin-top: 10px !important;
+                padding-top: 10px !important;
+                font-size: 9px !important;
+            }
+        }
+        
+        @media screen {
+            body { padding: 40px; background: #f8f9fa; }
+            .container { 
+                max-width: 800px; 
+                margin: 0 auto; 
+                background: white; 
+                padding: 40px;
+                box-shadow: 0 0 30px rgba(0,0,0,0.1);
+            }
+            .print-button {
+                position: fixed;
+                top: 30px;
+                right: 30px;
+                background: #2c3e50;
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 15px;
+                font-weight: 600;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 1000;
+            }
+            .print-button:hover { background: #1a252f; }
+        }
+        
+        .container { width: 100%; }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #34495e;
+            position: relative;
+            min-height: 90px;
+        }
+
+        .logo-left,
+        .logo-right {
+            position: absolute;
+            top: 0;
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+
+        .logo-left { left: 0; }
+        .logo-right { right: 0; }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        
+        .header .project-name {
+            font-size: 14px;
+            color: #34495e;
+            margin-bottom: 2px;
+        }
+        
+        .header .date {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        /* Info Section */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .stakeholders {
+            margin: 8px 0 12px 0;
+            padding: 10px;
+            border: 1px solid #dce3ea;
+            border-radius: 4px;
+            background: #fbfcfe;
+            font-size: 12px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #34495e;
+            min-width: 140px;
+        }
+        
+        .info-value {
+            color: #2c3e50;
+        }
+        
+        /* Activities Table */
+        .section-title {
+            font-size: 16px;
+            color: #2c3e50;
+            font-weight: 700;
+            margin: 12px 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            padding: 8px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        td {
+            padding: 8px 8px;
+            border-bottom: 1px solid #ecf0f1;
+            font-size: 12px;
+        }
+        
+        tr:last-child td { border-bottom: none; }
+        
+        td strong {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 6px;
+            height: 16px;
+            overflow: hidden;
+            display: inline-block;
+            width: 100px;
+            vertical-align: middle;
+            margin-right: 6px;
+            border: 1px solid #bdc3c7;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #27ae60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        /* Photos */
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 12px 0;
+        }
+        
+        .photo-item {
+            text-align: center;
+            page-break-inside: avoid;
+        }
+        
+        .photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ecf0f1;
+        }
+        
+        .photo-caption {
+            margin-top: 4px;
+            font-size: 9px;
+            color: #7f8c8d;
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ecf0f1;
+            text-align: center;
+            font-size: 10px;
+            color: #95a5a6;
+        }
+
+        .footer-logo {
+            margin-top: 8px;
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            {% if report.project.client_logo %}
+            <img class="logo-left" src="{% url 'serve_project_logo' report.project.id 'client' %}" alt="Client Logo">
+            {% endif %}
+            {% if report.project.contractor_logo %}
+            <img class="logo-right" src="{% url 'serve_project_logo' report.project.id 'contractor' %}" alt="Contractor Logo">
+            {% endif %}
+            <h1>Daily Site Report</h1>
+            <div class="project-name">{{ report.project.title }}</div>
+            <div class="date">{{ report.date|date:"F d, Y" }}</div>
+        </div>
+
+        <!-- Report Info -->
+        <div class="info-section">
+            <div class="info-item">
+                <span class="info-label">Site Engineer:</span>
+                <span class="info-value">{{ report.site_engineer.display_name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Weather:</span>
+                <span class="info-value">{{ report.get_weather_display }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Report Date:</span>
+                <span class="info-value">{{ report.date|date:"F d, Y" }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">{{ report.get_status_display }}</span>
+            </div>
+        </div>
+
+        <div class="stakeholders">
+            <div>
+                <strong>Client:</strong><br>
+                {{ report.project.client_display }}
+            </div>
+            <div>
+                <strong>Contractor:</strong><br>
+                {{ report.project.contractor_display }}
+            </div>
+            <div>
+                <strong>Consultant:</strong><br>
+                {{ report.project.consultant_display }}
+            </div>
+        </div>
+
+        <!-- Activities -->
+        {% if activity_works %}
+        <h2 class="section-title">Activities Progress</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Activity</th>
+                    <th style="width: 20%; text-align: center;">Progress</th>
+                    <th style="width: 20%; text-align: center;">Completion</th>
+                    <th style="width: 35%;">Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for work in activity_works %}
+                <tr>
+                    <td><strong>{{ work.activity.name }}</strong></td>
+                    <td style="text-align: center;">
+                        {% if work.activity.total_quantity %}
+                            <div>{{ work.activity.total_quantity_completed|floatformat:3 }}/{{ work.activity.total_quantity|floatformat:3 }} {{ work.activity.get_unit_display }}</div>
+                            <div style="color: #27ae60; font-size: 12px; margin-top: 4px;">+{{ work.quantity|floatformat:3 }} today</div>
+                        {% else %}
+                            {{ work.quantity|floatformat:3 }} {{ work.activity.get_unit_display }}
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        {% with progress=work.activity.progress_percentage|default:0 %}
+                        {% if progress > 0 %}
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ progress }}%;">{{ progress }}%</div>
+                        </div>
+                        {% else %}
+                        N/A
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>{{ work.description|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
+        <!-- Photos -->
+        {% if photos %}
+        <h2 class="section-title">Site Photos</h2>
+        <div class="photos-grid">
+            {% for photo in photos %}
+            <div class="photo-item">
+                <img src="{% url 'serve_report_photo' photo.id %}" alt="Site photo">
+                {% if photo.caption %}
+                <div class="photo-caption">{{ photo.caption }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Daily Site Report - {{ report.project.title }}</p>
+            <p>Generated on {{ report.created_at|date:"F d, Y" }}</p>
+            {% if report.project.contractor_logo %}
+            <img class="footer-logo" src="{% url 'serve_project_logo' report.project.id 'contractor' %}" alt="Contractor Logo">
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                window.print();
+            }
+        });
+    </script>
+</body>
+</html>

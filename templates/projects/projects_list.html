@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - Site Tracking System{% endblock %}
+{% block page_title %}Projects{% endblock %}
+
+{% block content %}
+<div class="container-fluid sts-page">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="content-card">
+                <div class="d-flex justify-content-between align-items-center sts-page-header">
+                    <div>
+                        <h4 class="mb-1">Project Management</h4>
+                        <p class="text-muted mb-0">Manage and monitor all construction projects</p>
+                    </div>
+                    {% if user.role in 'admin,site_engineer' %}
+                    <a href="{% url 'create_project' %}" class="btn btn-primary-custom">
+                        <i class="bi bi-plus-circle"></i> New Project
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search and Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="content-card">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="search" name="search" 
+                                   value="{{ search_query }}" placeholder="Search projects...">
+                            <label for="search"><i class="bi bi-search"></i> Search Projects</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-floating">
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All Status</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                                    {{ label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <label for="status"><i class="bi bi-funnel"></i> Filter by Status</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100 h-100">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'projects_list' %}" class="btn btn-outline-secondary w-100 h-100">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Projects Grid -->
+    <div class="row">
+        {% for project in page_obj %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="stats-card h-100">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div class="card-icon total-projects">
+                        <i class="bi bi-folder"></i>
+                    </div>
+                    <span class="status-badge status-{{ project.status }}">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+                
+                <h5 class="fw-bold mb-2">{{ project.title }}</h5>
+                <p class="text-muted small mb-3">
+                    <i class="bi bi-geo-alt"></i> {{ project.location|truncatechars:40 }}
+                </p>
+                
+                <!-- Progress Bar -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">Progress</small>
+                        <small class="fw-bold">{{ project.progress_percentage }}%</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ project.progress_percentage }}%"></div>
+                    </div>
+                </div>
+                
+                <!-- Project Details -->
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <small class="text-muted d-block">Start Date</small>
+                        <small class="fw-bold">{{ project.start_date|date:"M d, Y" }}</small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted d-block">End Date</small>
+                        <small class="fw-bold">{{ project.end_date|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+                
+                <!-- Team Info -->
+                <div class="border-top pt-3">
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Site Engineer</small>
+                            <small class="fw-bold">{% if project.site_engineer %}{{ project.site_engineer.display_name }}{% else %}Not assigned{% endif %}</small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Client</small>
+                            <small class="fw-bold">{{ project.client_display }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="mt-3 d-flex gap-2">
+                    <a href="{% url 'project_detail' project.id %}" class="btn btn-primary-custom btn-sm flex-fill">
+                        <i class="bi bi-eye"></i> View Details
+                    </a>
+                    {% if user.role == 'site_engineer' and user == project.site_engineer and project.status == 'ongoing' %}
+                    <a href="{% url 'create_daily_report' project.id %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-file-earmark-plus"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="content-card text-center py-5">
+                <i class="bi bi-folder-x display-1 text-muted mb-3"></i>
+                <h4 class="text-muted mb-3">No Projects Found</h4>
+                <p class="text-muted mb-4">
+                    {% if search_query or status_filter %}
+                        No projects match your search criteria. Try adjusting your filters.
+                    {% else %}
+                        You don't have access to any projects yet.
+                    {% endif %}
+                </p>
+                {% if user.role == 'admin' %}
+                <a href="{% url 'create_project' %}" class="btn btn-primary-custom">
+                    <i class="bi bi-plus-circle"></i> Create Your First Project
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="content-card">
+                <nav aria-label="Projects pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="bi bi-chevron-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="bi bi-chevron-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}">
+                                <i class="bi bi-chevron-double-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} projects
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-submit form on status change
+    document.getElementById('status').addEventListener('change', function() {
+        this.form.submit();
+    });
+    
+    // Add fade-in animation to project cards
+    document.addEventListener('DOMContentLoaded', function() {
+        const cards = document.querySelectorAll('.stats-card');
+        cards.forEach((card, index) => {
+            card.style.animationDelay = `${index * 0.1}s`;
+            card.classList.add('fade-in');
+        });
+    });
+</script>
+{% endblock %}
