@@ -259,9 +259,11 @@
         min-width: 0 !important;
     }
 
-    .activities-table.sts-mobile-stack .file-input {
+    .activities-table.sts-mobile-stack .file-input,
+    .activities-table.sts-mobile-stack .picture-upload {
         min-width: 0 !important;
         width: 100%;
+        max-width: 100%;
     }
 
     .activities-table.sts-mobile-stack .status-select,

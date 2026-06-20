@@ -17,6 +17,8 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         border: 1px solid var(--border-color);
         padding: 32px;
+        max-width: 100%;
+        overflow: visible;
     }
     
     .page-header {
@@ -79,13 +81,18 @@
     /* Activities Table Styles */
     .table-container {
         border-radius: 8px;
-        overflow: hidden;
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
         border: 1px solid var(--border-color);
         background: white;
+        max-width: 100%;
     }
     
     .activities-table {
         width: 100%;
+        min-width: 720px;
+        table-layout: fixed;
         border-collapse: collapse;
         margin-bottom: 0;
     }
@@ -336,7 +343,9 @@
     }
     
     .status-select {
-        min-width: 130px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         border-radius: 6px;
         border: 1px solid var(--border-color);
         font-size: 13px;
@@ -353,7 +362,9 @@
     }
     
     .remarks-input {
-        min-width: 180px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
         border-radius: 6px;
         border: 1px solid var(--border-color);
         font-size: 13px;
@@ -369,54 +380,97 @@
     }
     
     .file-input {
-        font-size: 12px;
-        border-radius: 6px;
-        border: 1px solid var(--border-color);
-        background: white;
-        transition: all 0.2s;
-        min-width: 150px;
-        padding: 5px 8px;
+        display: none;
     }
-    
-    .file-input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(103, 61, 230, 0.1);
-        outline: none;
+
+    .picture-cell {
+        width: 130px;
+        max-width: 130px;
+        overflow: hidden;
+        vertical-align: middle !important;
+    }
+
+    .picture-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+        width: 100%;
+        max-width: 118px;
+        margin: 0 auto;
+    }
+
+    .picture-upload-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 100%;
+        padding: 7px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #673de6;
+        background: #f0ebff;
+        border: 1px solid #d4c4f5;
+        border-radius: 6px;
+        cursor: pointer;
+        white-space: nowrap;
+        margin: 0;
+        transition: all 0.2s;
+    }
+
+    .picture-upload-label:hover {
+        background: #e8ddff;
+        border-color: #673de6;
+    }
+
+    .picture-upload-label.has-file {
+        color: #065f46;
+        background: #ecfdf5;
+        border-color: #6ee7b7;
+    }
+
+    .file-chosen-name {
+        font-size: 10px;
+        color: #6b7280;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: block;
+        text-align: center;
+        line-height: 1.2;
     }
     
     /* Picture column specific styling */
     .activities-table th:nth-child(5),
     .activities-table td:nth-child(5) {
-        min-width: 170px;
-        width: 170px;
+        width: 130px;
+        max-width: 130px;
     }
     
     /* Activity column */
     .activities-table th:nth-child(1),
     .activities-table td:nth-child(1) {
-        min-width: 120px;
-        width: 25%;
+        width: 14%;
     }
     
     /* Progress column */
     .activities-table th:nth-child(2),
     .activities-table td:nth-child(2) {
-        min-width: 260px;
-        width: 30%;
+        width: 34%;
     }
     
     /* Status column */
     .activities-table th:nth-child(3),
     .activities-table td:nth-child(3) {
-        min-width: 130px;
-        width: 15%;
+        width: 14%;
     }
     
     /* Remarks column */
     .activities-table th:nth-child(4),
     .activities-table td:nth-child(4) {
-        min-width: 180px;
-        width: 25%;
+        width: 22%;
     }
     
     /* Quantity Input Styles - Removed old styles, replaced with new design above */
@@ -471,10 +525,9 @@
             max-width: 100% !important;
         }
         
-        .file-input {
-            min-width: 0 !important;
-            width: 100%;
-            font-size: 12px;
+        .file-input,
+        .picture-upload {
+            max-width: 100%;
         }
     }
 </style>
@@ -686,11 +739,17 @@
                                                            name="activity_remarks_{{ item.activity.id }}"
                                                            placeholder="Remarks..." />
                                                 </td>
-                                                <td class="text-center" data-label="Picture">
-                                                    <input type="file" 
-                                                           class="form-control file-input" 
-                                                           name="activity_picture_{{ item.activity.id }}"
-                                                           accept="image/*">
+                                                <td class="text-center picture-cell" data-label="Picture">
+                                                    <div class="picture-upload">
+                                                        <label class="picture-upload-label">
+                                                            <i class="bi bi-image"></i> Choose
+                                                            <input type="file"
+                                                                   class="file-input"
+                                                                   name="activity_picture_{{ item.activity.id }}"
+                                                                   accept="image/*">
+                                                        </label>
+                                                        <small class="file-chosen-name">No file</small>
+                                                    </div>
                                                 </td>
                                             </tr>
                                             <!-- Hidden fields for quantity calculation -->
@@ -970,12 +1029,17 @@ document.querySelector('form').addEventListener('submit', function(e) {
 // File upload feedback
 document.querySelectorAll('.file-input').forEach(input => {
     input.addEventListener('change', function() {
+        const label = this.closest('.picture-upload-label');
+        const hint = this.closest('.picture-upload')?.querySelector('.file-chosen-name');
         if (this.files.length > 0) {
-            this.style.borderColor = '#28a745';
-            this.style.backgroundColor = '#f8fff9';
+            if (label) label.classList.add('has-file');
+            if (hint) {
+                const name = this.files[0].name;
+                hint.textContent = name.length > 14 ? name.slice(0, 12) + '…' : name;
+            }
         } else {
-            this.style.borderColor = '#dee2e6';
-            this.style.backgroundColor = 'white';
+            if (label) label.classList.remove('has-file');
+            if (hint) hint.textContent = 'No file';
         }
     });
 });
