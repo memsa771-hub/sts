@@ -447,6 +447,195 @@
     .activity-section {
         padding: 16px !important;
     }
+
+    .activities-container {
+        padding: 12px !important;
+    }
+}
+
+/* ---- Project selection (activities) ---- */
+.project-selection-container {
+    padding: clamp(12px, 3vw, 32px);
+}
+
+@media (max-width: 767.98px) {
+    .project-selection-container {
+        padding: 12px !important;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    .selection-title {
+        font-size: 1.5rem;
+    }
+
+    .project-card {
+        padding: 18px;
+    }
+}
+
+/* ---- Stacked tables inside scroll wrappers ---- */
+@media (max-width: 767.98px) {
+    .table-responsive:has(.sts-stack-table),
+    .activities-table-container:has(.sts-stack-table) {
+        overflow-x: visible !important;
+        -webkit-overflow-scrolling: auto;
+    }
+
+    .sts-stack-table {
+        min-width: 0 !important;
+    }
+}
+
+/* ---- Notifications page ---- */
+@media (max-width: 767.98px) {
+    .notification-item .row {
+        row-gap: 12px;
+    }
+
+    .notification-item .col-md-1,
+    .notification-item .col-md-8,
+    .notification-item .col-md-3 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        text-align: left !important;
+    }
+
+    .notification-item .col-md-1 {
+        text-align: left !important;
+    }
+
+    .notification-item .d-flex.gap-2 {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .notification-item .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+
+    .sts-page-header .d-flex.gap-2 {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .sts-page-header .d-flex.gap-2 .btn {
+        width: 100%;
+    }
+}
+
+/* ---- Form pages (create project, RFI, workers, team) ---- */
+@media (max-width: 767.98px) {
+    .form-page-container,
+    .create-form-container,
+    .rfi-form-container {
+        padding: 12px !important;
+    }
+
+    .multi-column-form,
+    .info-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ---- User management cards ---- */
+@media (max-width: 575.98px) {
+    .user-card .card-body {
+        padding: 16px;
+    }
+
+    .user-card .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start !important;
+    }
+}
+
+/* ---- Daily reports filters ---- */
+@media (max-width: 767.98px) {
+    .filter-card {
+        padding: 14px !important;
+    }
+
+    .quick-filters .btn-sm {
+        margin-bottom: 4px;
+    }
+}
+
+/* ---- RFI list status cards ---- */
+@media (max-width: 767.98px) {
+    .sts-page .row.mb-4 > [class*="col-md-4"] {
+        margin-bottom: 12px;
+    }
+}
+
+/* ---- Create / edit form pages ---- */
+@media (max-width: 767.98px) {
+    .form-container {
+        padding: 12px !important;
+    }
+
+    .form-card {
+        padding: 20px 16px !important;
+    }
+
+    .form-container .d-flex.justify-content-between.align-items-start {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch !important;
+    }
+
+    .form-container .d-flex.justify-content-between.align-items-start .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ---- Workers list ---- */
+@media (max-width: 767.98px) {
+    .workers-container {
+        padding: 12px !important;
+    }
+
+    .workers-container .page-header {
+        padding: 20px 16px !important;
+        border-radius: 12px;
+    }
+
+    .workers-container .controls-section {
+        padding: 16px !important;
+    }
+
+    .workers-container .controls-section .row > [class*="col-"] {
+        margin-bottom: 8px;
+    }
+
+    .workers-container .skill-category-header {
+        padding: 12px 16px;
+        font-size: 0.95rem;
+    }
+}
+
+/* ---- Card action rows on project / dashboard pages ---- */
+@media (max-width: 575.98px) {
+    .stats-card .d-flex.justify-content-between.align-items-start {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .stats-card .card-actions,
+    .stats-card .project-actions {
+        width: 100%;
+    }
+
+    .stats-card .card-actions .btn,
+    .stats-card .project-actions .btn {
+        width: 100%;
+        margin-bottom: 6px;
+    }
 }
 
 /* ---- Project detail ---- */

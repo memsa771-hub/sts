@@ -9,7 +9,9 @@
     .activities-container {
         max-width: 1400px;
         margin: 0 auto;
-        padding: 32px;
+        padding: clamp(12px, 3vw, 32px);
+        width: 100%;
+        overflow-x: hidden;
     }
     
     .activity-section {
@@ -401,39 +403,142 @@
         margin-bottom: 8px;
     }
     
-    @media (max-width: 768px) {
+    @media (max-width: 767.98px) {
         .activities-container {
-            padding: 16px;
+            padding: 12px;
         }
-        
+
         .activity-section {
-            padding: 20px;
+            padding: 16px;
             margin-bottom: 16px;
         }
-        
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 16px;
+        }
+
         .activity-form {
             grid-template-columns: 1fr;
             gap: 12px;
         }
-        
+
+        .btn-add {
+            width: 100%;
+            height: 44px;
+        }
+
+        .import-actions {
+            flex-direction: column;
+            align-items: stretch;
+            margin-top: 16px;
+            padding-top: 16px;
+        }
+
+        .import-actions-title {
+            margin-right: 0;
+            width: 100%;
+        }
+
+        .btn-import,
+        .btn-template {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .bulk-actions,
+        .bulk-actions.show {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .bulk-actions-buttons {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-bulk {
+            width: 100%;
+            justify-content: center;
+        }
+
         .activities-table-container {
-            overflow-x: auto;
+            overflow-x: visible;
+            border: none;
+            background: transparent;
         }
-        
-        .activities-table {
-            min-width: 600px;
+
+        .activities-table.sts-stack-table {
+            min-width: 0 !important;
+            width: 100%;
         }
-        
+
+        .activities-table.sts-stack-table thead {
+            display: none;
+        }
+
+        .activities-table.sts-stack-table tbody tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .activities-table.sts-stack-table tbody td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 12px 14px !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+            text-align: right !important;
+        }
+
+        .activities-table.sts-stack-table tbody td::before {
+            content: attr(data-label);
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            text-align: left;
+            flex-shrink: 0;
+        }
+
+        .activities-table.sts-stack-table tbody td:last-child {
+            border-bottom: none !important;
+        }
+
+        .activities-table.sts-stack-table tbody td.actions-cell {
+            flex-direction: row;
+            justify-content: space-between !important;
+            align-items: center !important;
+        }
+
+        .activities-table.sts-stack-table tbody td.actions-cell .btn-icon {
+            flex-shrink: 0;
+        }
+
         .activities-table th,
         .activities-table td {
             padding: 12px;
             font-size: 13px;
         }
-        
+
         .btn-icon {
-            width: 28px;
-            height: 28px;
-            font-size: 13px;
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            padding: 40px 16px;
         }
     }
 </style>
