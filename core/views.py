@@ -1436,23 +1436,27 @@ def import_activities(request):
     if not uploaded_file.name.lower().endswith('.xlsx'):
         return JsonResponse({'success': False, 'error': 'Only .xlsx Excel files are accepted.'}, status=400)
 
+    uploaded_file.seek(0)
     summary = import_activities_from_xlsx(uploaded_file, project, request.user)
 
     if summary.get('file_error'):
         return JsonResponse(summary, status=400)
 
-    # Always return 200 for processed files so the frontend can read the JSON summary
-    # even when every row failed (e.g. duplicate activities on re-import).
-    return JsonResponse({
-        'success': bool(summary.get('successful', 0)),
+    successful = int(summary.get('successful', 0))
+    response_data = {
+        'success': successful > 0,
         'file_error': summary.get('file_error'),
         'total_rows': int(summary.get('total_rows', 0)),
-        'successful': int(summary.get('successful', 0)),
+        'successful': successful,
         'failed': int(summary.get('failed', 0)),
         'failures': summary.get('failures', []),
         'created_count': int(summary.get('created_count', 0)),
         'message': summary.get('message', ''),
-    })
+    }
+    response = JsonResponse(response_data)
+    if successful > 0:
+        response['X-Import-Successful'] = str(successful)
+    return response
 
 
 @login_required

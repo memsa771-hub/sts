@@ -932,14 +932,60 @@ activityForm.addEventListener('submit', function(e) {
 });
 }
 
+function getImportModal() {
+    return document.getElementById('importExcelModal');
+}
+
+function getImportEl(id) {
+    const modal = getImportModal();
+    return modal ? modal.querySelector('#' + id) : document.getElementById(id);
+}
+
 function resetImportModal() {
-    document.getElementById('importFormSection').style.display = 'block';
-    document.getElementById('importSummarySection').style.display = 'none';
-    document.getElementById('importSummaryMessage').className = 'alert mb-3';
-    document.getElementById('importFailuresWrap').style.display = 'none';
-    document.getElementById('importFailuresList').innerHTML = '';
-    document.getElementById('importSubmitBtn').style.display = 'inline-block';
-    document.getElementById('importExcelFile').value = '';
+    const formSection = getImportEl('importFormSection');
+    const summarySection = getImportEl('importSummarySection');
+    const messageEl = getImportEl('importSummaryMessage');
+    const failuresWrap = getImportEl('importFailuresWrap');
+    const failuresList = getImportEl('importFailuresList');
+    const submitBtn = getImportEl('importSubmitBtn');
+    const fileInput = getImportEl('importExcelFile');
+
+    if (formSection) formSection.style.display = 'block';
+    if (summarySection) summarySection.style.display = 'none';
+    if (messageEl) {
+        messageEl.className = 'alert mb-3';
+        messageEl.textContent = '';
+    }
+    if (failuresWrap) failuresWrap.style.display = 'none';
+    if (failuresList) failuresList.innerHTML = '';
+    if (submitBtn) {
+        submitBtn.style.display = 'inline-block';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
+    }
+    if (fileInput) fileInput.value = '';
+}
+
+function parseImportResponse(text) {
+    if (!text) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(text);
+    } catch (error) {
+        const start = text.indexOf('{');
+        const end = text.lastIndexOf('}');
+        if (start >= 0 && end > start) {
+            try {
+                return JSON.parse(text.slice(start, end + 1));
+            } catch (innerError) {
+                return null;
+            }
+        }
+    }
+
+    return null;
 }
 
 function escapeHtml(text) {
@@ -956,28 +1002,39 @@ function showImportSummary(data) {
     const failed = Number(data.failed) || 0;
     const totalRows = Number(data.total_rows) || 0;
 
-    document.getElementById('importFormSection').style.display = 'none';
-    document.getElementById('importSummarySection').style.display = 'block';
-    document.getElementById('importSubmitBtn').style.display = 'none';
+    const formSection = getImportEl('importFormSection');
+    const summarySection = getImportEl('importSummarySection');
+    const submitBtn = getImportEl('importSubmitBtn');
+    const messageEl = getImportEl('importSummaryMessage');
 
-    const messageEl = document.getElementById('importSummaryMessage');
-    messageEl.textContent = data.message || data.file_error || data.error || 'Import finished.';
-    if (successful > 0 && failed === 0) {
-        messageEl.className = 'alert alert-success mb-3';
-    } else if (successful > 0) {
-        messageEl.className = 'alert alert-warning mb-3';
-    } else {
-        messageEl.className = 'alert alert-danger mb-3';
+    if (formSection) formSection.style.display = 'none';
+    if (summarySection) summarySection.style.display = 'block';
+    if (submitBtn) submitBtn.style.display = 'none';
+
+    if (messageEl) {
+        messageEl.textContent = data.message || data.file_error || data.error || 'Import finished.';
+        if (successful > 0 && failed === 0) {
+            messageEl.className = 'alert alert-success mb-3';
+        } else if (successful > 0) {
+            messageEl.className = 'alert alert-warning mb-3';
+        } else {
+            messageEl.className = 'alert alert-danger mb-3';
+        }
     }
 
-    document.getElementById('summaryTotal').textContent = totalRows;
-    document.getElementById('summarySuccess').textContent = successful;
-    document.getElementById('summaryFailed').textContent = failed;
+    const totalEl = getImportEl('summaryTotal');
+    const successEl = getImportEl('summarySuccess');
+    const failedEl = getImportEl('summaryFailed');
+    if (totalEl) totalEl.textContent = totalRows;
+    if (successEl) successEl.textContent = successful;
+    if (failedEl) failedEl.textContent = failed;
 
     const failures = Array.isArray(data.failures) ? data.failures : [];
-    if (failures.length > 0) {
-        document.getElementById('importFailuresWrap').style.display = 'block';
-        document.getElementById('importFailuresList').innerHTML = failures.map(item => (
+    const failuresWrap = getImportEl('importFailuresWrap');
+    const failuresList = getImportEl('importFailuresList');
+    if (failures.length > 0 && failuresWrap && failuresList) {
+        failuresWrap.style.display = 'block';
+        failuresList.innerHTML = failures.map(item => (
             `<div class="import-failure-item"><strong>Row ${escapeHtml(item.row)}:</strong> ${escapeHtml(item.reason)}</div>`
         )).join('');
     }
@@ -985,16 +1042,27 @@ function showImportSummary(data) {
 
 function submitActivityImport() {
     const form = document.getElementById('importExcelForm');
-    const fileInput = document.getElementById('importExcelFile');
-    const submitBtn = document.getElementById('importSubmitBtn');
+    const fileInput = getImportEl('importExcelFile');
+    const submitBtn = getImportEl('importSubmitBtn');
 
-    if (!fileInput.files.length) {
+    if (!form || !fileInput || !fileInput.files.length) {
         alert('Please select an Excel (.xlsx) file.');
         return;
     }
 
-    const formData = new FormData(form);
-    const csrfToken = formData.get('csrfmiddlewaretoken');
+    const formData = new FormData();
+    const csrfInput = form.querySelector('[name=csrfmiddlewaretoken]');
+    const projectInput = form.querySelector('[name=project_id]');
+    const csrfToken = csrfInput ? csrfInput.value : '';
+
+    if (projectInput) {
+        formData.append('project_id', projectInput.value);
+    }
+    formData.append('file', fileInput.files[0]);
+    if (csrfToken) {
+        formData.append('csrfmiddlewaretoken', csrfToken);
+    }
+
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Importing...';
 
@@ -1004,48 +1072,46 @@ function submitActivityImport() {
         credentials: 'same-origin',
         headers: {
             'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
             'Accept': 'application/json'
         }
     })
     .then(async response => {
         const responseText = await response.text();
-        let data;
-        try {
-            data = responseText ? JSON.parse(responseText) : {};
-        } catch (parseError) {
-            console.error('Import response parse error:', parseError, responseText);
-            throw new Error('Server returned an invalid response. Please refresh the page and try again.');
-        }
+        const data = parseImportResponse(responseText) || {};
+        const successful = Number(data.successful) || Number(response.headers.get('X-Import-Successful')) || 0;
+        const createdCount = Number(data.created_count) || successful;
 
-        showImportSummary(data);
-
-        const successful = Number(data.successful) || 0;
-        if (successful > 0) {
-            setTimeout(() => location.reload(), 800);
+        if (successful > 0 || createdCount > 0) {
+            window.location.reload();
             return;
         }
 
+        if (!response.ok && !data.message && !data.file_error && !data.error) {
+            data.message = 'Import failed. Please check the file and try again.';
+        }
+
+        showImportSummary(data);
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
     })
     .catch(error => {
         console.error('Error:', error);
-        document.getElementById('importFormSection').style.display = 'none';
-        document.getElementById('importSummarySection').style.display = 'block';
-        document.getElementById('importSubmitBtn').style.display = 'none';
-
-        const messageEl = document.getElementById('importSummaryMessage');
-        messageEl.textContent = error.message || 'Import failed due to a network or server error.';
-        messageEl.className = 'alert alert-danger mb-3';
-
+        showImportSummary({
+            message: error.message || 'Import failed due to a network or server error.',
+            successful: 0,
+            failed: 0,
+            total_rows: 0,
+            failures: []
+        });
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload & Import';
     });
 }
 
-const importExcelModal = document.getElementById('importExcelModal');
+const importExcelModal = getImportModal();
 if (importExcelModal) {
-    importExcelModal.addEventListener('show.bs.modal', resetImportModal);
+    importExcelModal.addEventListener('hidden.bs.modal', resetImportModal);
 }
 
 // No initialization needed - progress bars removed for clean look

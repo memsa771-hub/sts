@@ -106,22 +106,18 @@ def validate_workbook_structure(workbook):
 
     worksheet = workbook[workbook.sheetnames[0]]
 
-    if worksheet.max_column != REQUIRED_COLUMN_COUNT:
-        return (
-            False,
-            f'Invalid file structure: exactly {REQUIRED_COLUMN_COUNT} columns are required '
-            f'(Activity Name, Total Quantity, Unit). Found {worksheet.max_column} column(s).',
-        )
-
     for row_index, row in enumerate(
         worksheet.iter_rows(min_row=1, max_row=worksheet.max_row, min_col=1, max_col=3, values_only=True),
         start=1,
     ):
         if all(cell is None or str(cell).strip() == '' for cell in row):
             continue
-        extra_values = [cell for cell in row[3:] if cell is not None and str(cell).strip() != '']
-        if extra_values:
-            return False, f'Row {row_index} contains data beyond column C. Only 3 columns are allowed.'
+
+        # Reject rows that contain values beyond column C.
+        if len(row) > REQUIRED_COLUMN_COUNT:
+            extra_values = [cell for cell in row[REQUIRED_COLUMN_COUNT:] if cell is not None and str(cell).strip() != '']
+            if extra_values:
+                return False, f'Row {row_index} contains data beyond column C. Only 3 columns are allowed.'
 
     return True, None
 
@@ -162,6 +158,7 @@ def import_activities_from_xlsx(uploaded_file, project, created_by):
     }
 
     try:
+        uploaded_file.seek(0)
         workbook = load_workbook(uploaded_file, read_only=True, data_only=True)
     except Exception:
         summary['file_error'] = 'Unable to read the Excel file. The file may be corrupt or not a valid .xlsx file.'

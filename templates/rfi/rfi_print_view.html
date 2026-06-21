@@ -141,6 +141,16 @@
                     <td>{% if rfi.inspection_date %}{{ rfi.inspection_date|date:"M d, Y" }} {{ rfi.inspection_time|time:"g:i A" }}{% else %}Not scheduled{% endif %}</td>
                 </tr>
                 <tr>
+                    <th>Client</th>
+                    <td>{{ rfi.project.client_display|default:"-" }}</td>
+                    <th>Contractor</th>
+                    <td>{{ rfi.project.contractor_display|default:"-" }}</td>
+                </tr>
+                <tr>
+                    <th>Consultant</th>
+                    <td colspan="3">{{ rfi.project.consultant_display|default:"-" }}</td>
+                </tr>
+                <tr>
                     <th>Description</th>
                     <td colspan="3">{{ rfi.request_description|linebreaksbr }}</td>
                 </tr>
