@@ -114,10 +114,12 @@ Environment file location: `/home/ubuntu/sts/.env`
 ## Troubleshooting
 
 **Site not opening?**
-1. Check service: `sudo systemctl status sts`
-2. Check logs: `sudo journalctl -u sts -n 50`
-3. Confirm port 8000 is open in cloud firewall
-4. Test locally on server: `curl http://127.0.0.1:8000`
+1. Run diagnostics: `sudo bash diagnose.sh`
+2. Check service: `sudo systemctl status sts`
+3. Check logs: `sudo journalctl -u sts -n 50`
+4. Test locally on server: `curl -I http://127.0.0.1:8000`
+5. If curl works locally but browser fails → **open port 8000 in your VPS cloud panel** (not just UFW)
+6. Confirm port is listening: `sudo ss -tlnp | grep 8000`
 
 **Static files/CSS missing?**
 ```bash

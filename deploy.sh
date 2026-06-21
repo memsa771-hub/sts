@@ -14,7 +14,18 @@ PORT="${PORT:-8000}"
 REPO_URL="${REPO_URL:-https://github.com/memsa771-hub/sts.git}"
 BRANCH="${BRANCH:-main}"
 SERVICE_NAME="${SERVICE_NAME:-sts}"
-DEPLOY_USER="${DEPLOY_USER:-${SUDO_USER:-ubuntu}}"
+
+# Detect deploy user (root login vs sudo vs ubuntu)
+if [[ -z "${DEPLOY_USER:-}" ]]; then
+  if [[ -n "${SUDO_USER:-}" ]]; then
+    DEPLOY_USER="${SUDO_USER}"
+  elif [[ "$(id -un)" == "root" ]]; then
+    DEPLOY_USER="root"
+  else
+    DEPLOY_USER="ubuntu"
+  fi
+fi
+
 APP_DIR="${APP_DIR:-/home/${DEPLOY_USER}/sts}"
 VENV_DIR="${APP_DIR}/venv"
 ENV_FILE="${APP_DIR}/.env"
@@ -70,7 +81,7 @@ echo "[4/8] Creating environment file..."
 if [[ ! -f "${ENV_FILE}" ]]; then
   SECRET_KEY="$("${VENV_DIR}/bin/python" -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())')"
   cat > "${ENV_FILE}" <<EOF
-DJANGO_SECRET_KEY=${SECRET_KEY}
+DJANGO_SECRET_KEY='${SECRET_KEY}'
 DJANGO_DEBUG=False
 DJANGO_ALLOWED_HOSTS=${SERVER_IP},localhost,127.0.0.1
 DJANGO_CSRF_TRUSTED_ORIGINS=http://${SERVER_IP}:${PORT}
@@ -130,24 +141,57 @@ if command -v ufw >/dev/null 2>&1 && ufw status | grep -q "Status: active"; then
 fi
 
 echo "[8/8] Checking service status..."
-sleep 2
-if systemctl is-active --quiet "${SERVICE_NAME}"; then
-  echo
-  echo "============================================"
-  echo " DEPLOY SUCCESS"
-  echo " Open: http://${SERVER_IP}:${PORT}"
-  echo "============================================"
-  echo
-  echo "Useful commands:"
-  echo "  sudo systemctl status ${SERVICE_NAME}"
-  echo "  sudo systemctl restart ${SERVICE_NAME}"
-  echo "  sudo journalctl -u ${SERVICE_NAME} -f"
-  echo
-  echo "Create admin user (first time only):"
-  echo "  cd ${APP_DIR} && source .env && source venv/bin/activate"
-  echo "  set -a && source .env && set +a && python manage.py createsuperuser"
-else
+sleep 3
+
+if ! systemctl is-active --quiet "${SERVICE_NAME}"; then
   echo "Service failed to start. Logs:"
-  journalctl -u "${SERVICE_NAME}" -n 30 --no-pager
+  journalctl -u "${SERVICE_NAME}" -n 50 --no-pager
   exit 1
 fi
+
+echo "Service is active."
+
+echo
+echo "Port check:"
+if command -v ss >/dev/null 2>&1; then
+  ss -tlnp | grep ":${PORT} " || echo "WARNING: nothing listening on port ${PORT}"
+else
+  netstat -tlnp 2>/dev/null | grep ":${PORT} " || echo "WARNING: nothing listening on port ${PORT}"
+fi
+
+echo
+echo "Local HTTP check:"
+LOCAL_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 8 "http://127.0.0.1:${PORT}/" || echo "000")
+if [[ "${LOCAL_CODE}" == "200" || "${LOCAL_CODE}" == "302" || "${LOCAL_CODE}" == "301" ]]; then
+  echo "OK - app responds on localhost (HTTP ${LOCAL_CODE})"
+else
+  echo "WARNING - localhost returned HTTP ${LOCAL_CODE}"
+  echo "Recent logs:"
+  journalctl -u "${SERVICE_NAME}" -n 30 --no-pager
+fi
+
+echo
+echo "============================================"
+echo " DEPLOY SUCCESS"
+echo " Open: http://${SERVER_IP}:${PORT}"
+echo "============================================"
+echo
+if [[ "${LOCAL_CODE}" == "200" || "${LOCAL_CODE}" == "302" || "${LOCAL_CODE}" == "301" ]]; then
+  echo "App works locally. If browser says 'connection refused':"
+  echo "  1. Open TCP port ${PORT} in your VPS/cloud provider firewall"
+  echo "  2. Run: sudo bash diagnose.sh"
+else
+  echo "App is NOT responding locally. Run:"
+  echo "  sudo journalctl -u ${SERVICE_NAME} -n 50 --no-pager"
+  echo "  sudo bash diagnose.sh"
+fi
+echo
+echo "Useful commands:"
+echo "  sudo systemctl status ${SERVICE_NAME}"
+echo "  sudo systemctl restart ${SERVICE_NAME}"
+echo "  sudo journalctl -u ${SERVICE_NAME} -f"
+echo "  sudo bash diagnose.sh"
+echo
+echo "Create admin user (first time only):"
+echo "  cd ${APP_DIR} && set -a && source .env && set +a && source venv/bin/activate"
+echo "  python manage.py createsuperuser"
