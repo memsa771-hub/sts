@@ -16,7 +16,22 @@ systemctl status "${SERVICE_NAME}" --no-pager -l || true
 echo
 echo "[2] Is port ${PORT} listening?"
 if command -v ss >/dev/null 2>&1; then
-  ss -tlnp | grep ":${PORT} " || echo "NOT LISTENING on port ${PORT}"
+  PORT_INFO=$(ss -tlnp | grep ":${PORT} " || true)
+  if [[ -n "${PORT_INFO}" ]]; then
+    echo "${PORT_INFO}"
+    if echo "${PORT_INFO}" | grep -q "127.0.0.1:${PORT}"; then
+      if ! echo "${PORT_INFO}" | grep -qE "0\.0\.0\.0:${PORT}|\[::\]:${PORT}|\*:${PORT}"; then
+        echo
+        echo "PROBLEM: Port ${PORT} is only on 127.0.0.1 (localhost)."
+        echo "External browsers cannot connect. Fix with:"
+        echo "  sudo systemctl stop ${SERVICE_NAME}"
+        echo "  sudo fuser -k ${PORT}/tcp"
+        echo "  sudo systemctl start ${SERVICE_NAME}"
+      fi
+    fi
+  else
+    echo "NOT LISTENING on port ${PORT}"
+  fi
 else
   netstat -tlnp 2>/dev/null | grep ":${PORT} " || echo "NOT LISTENING on port ${PORT}"
 fi

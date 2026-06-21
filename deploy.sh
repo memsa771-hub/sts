@@ -131,9 +131,27 @@ WantedBy=multi-user.target
 EOF
 
 echo "[7/8] Starting service..."
+
+# Stop systemd service and kill any stale process still holding the port
+# (common when an old gunicorn was started manually on 127.0.0.1:8000)
+systemctl stop "${SERVICE_NAME}" 2>/dev/null || true
+sleep 2
+
+if command -v fuser >/dev/null 2>&1; then
+  fuser -k "${PORT}/tcp" 2>/dev/null || true
+  sleep 1
+fi
+
+# Fallback if fuser is unavailable
+if ss -tlnp 2>/dev/null | grep -q ":${PORT} "; then
+  echo "Port ${PORT} still in use, force-stopping leftover processes..."
+  pkill -f "gunicorn sitetrack.wsgi" 2>/dev/null || true
+  sleep 2
+fi
+
 systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
-systemctl restart "${SERVICE_NAME}"
+systemctl start "${SERVICE_NAME}"
 
 if command -v ufw >/dev/null 2>&1 && ufw status | grep -q "Status: active"; then
   echo "Opening firewall port ${PORT}..."
